@@ -7,7 +7,12 @@
 ## IsLibrary: true
 ## SavedVariables: LibSesonalEventManager_SV_Data
 
-LibSeasonalEventManager.lua
+initialize.lua
+
+i18n\en.lua
+i18n\$(language).lua
+
+SeasonalEventManager.lua
 
 # The creation and use of Add-ons are subject to the Add-on Terms of Use,
 # available at https://account.elderscrollsonline.com/add-on-terms. 

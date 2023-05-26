@@ -1,6 +1,5 @@
 
 local LIB_IDENTIFIER, LIB_VERSION = "LibSeasonalEventManager", 01
-
 if _G[LIB_IDENTIFIER] and _G[LIB_IDENTIFIER].version > LIB_VERSION then
 	return
 end
@@ -30,7 +29,32 @@ end
 		if add-on is saving eventIndex
 		
 		
-		May add more eventOject functions later for descriptions and other event info.
+		
+		---------------------------------------------------------------------------------
+		
+		For comparing events with quests.
+		The questIds are converted to names on load. 
+		Then, on quest pickup, it compares the questNames if the event has not been identified.
+		
+		Since events can have quests in different zones, each zone's quests are added separately under it's zoneIndex
+		['quests'] = {
+			[zoneIndex] = {questId},
+		},
+		
+		EVENTS_TO_INDEX_MAP
+			Allows dynamically generate an index for all events to be used across loading for event lookup.
+			EVENTS_TO_INDEX_MAP[eventIndex] = eventInfo
+		
+		ITEM_TO_INDEX_MAP
+			Allows simplifying event lookup by itemId.
+			ITEM_TO_INDEX_MAP[itemId] = eventIndex
+		
+		QUEST_TO_INDEX_MAP
+			Allows simplifying event lookup by questName.
+			QUEST_TO_INDEX_MAP[zoneIdex][questName] = eventIndex
+		
+		EVENTS_TO_INDEX_MAP[ ITEM_TO_INDEX_MAP[itemId] ]
+		EVENTS_TO_INDEX_MAP[ QUEST_TO_INDEX_MAP[zoneIdex][questName] ]
 ]]
 
 ---------------------------------------------------------------------------
@@ -73,6 +97,9 @@ local VAR_EVENT_TICKETS_QUEST	= 2
 local VAR_EVENT_TICKETS_LOOT	= 3
 local VAR_EVENT_TICKETS_TARGET	= 4
 
+local reward_type_event_tickets	= REWARD_TYPE_EVENT_TICKETS
+local var_event_string = GetString(SI_NOTIFICATIONTYPE19)
+
 
 local var_defaultEvent = {
 	['index'] 		= VAR_EVENT_UNKNOWN,
@@ -91,6 +118,8 @@ local defaultEventInfo = {
 	['rewardsBy'] 	= VAR_EVENT_UNKNOWN,
 }
 
+local QUEST_TO_INDEX_MAP = {}
+local ITEM_TO_INDEX_MAP = {}
 local EVENTS_TO_INDEX_MAP = {
 	[VAR_EVENT_UNKNOWN] = defaultEventInfo
 }
@@ -150,7 +179,11 @@ local EVENTS = {
 				['rewardsBy'] = VAR_EVENT_TYPE_QUEST,
 				['maxDailyRewards'] = 3,
 				['itemIds'] = {
-					96390, 133557, 141823, 156779, 182494, 171327, 19236896390
+					96390, 133557, 141823, 156779, 182494, 171327, 192368
+				},
+				['quests'] = {
+					5855, 5852, 5834, 5856, 5811, 5839, 5838, 5837, 5845
+				--	[15] = {5855, 5852, 5834, 5856, 5811, 5839, 5838, 5837, 5845},
 				},
 			},
 			{ -- Undaunted Celebration
@@ -164,10 +197,23 @@ local EVENTS = {
 			-- discarded?
 			{ -- Season of the Dragon Celebration
 				['eventType'] = VAR_EVENT_TYPE_UNKNOWN,
-				['rewardsBy'] = VAR_EVENT_TYPE_QUEST,
-				['maxDailyRewards'] = 3,
+				['rewardsBy'] = VAR_EVENT_TYPE_LOOT,
+				['maxDailyRewards'] = 2,
 				['itemIds'] = {-- Elsweyr Coffer
 					175580, 193735, 175579, 193734
+				},
+				['quests'] = {
+						6357, 6378, 6382, 6377, 6380, 6379, 6381, 6359, 6362, 6361, 6363, 6360, 6356,
+						6435, 3442, 6405, 6433, 6429, 6428, 6430, 6406
+					--[[
+					[681] = { -- Northern Elsweyr
+						6357, 6378, 6382, 6377, 6380, 6379, 6381, 6359, 6362, 6361, 6363, 6360, 6356
+					},
+					[720] = { -- Southern Elsweyr
+						6435, 3442, 6405, 6433, 6429, 6428, 6430, 6406
+					},
+					]]
+					
 				},
 			},
 			{ -- Daedric War Celebration Event
@@ -178,20 +224,27 @@ local EVENTS = {
 					182592,182599,171480,171476
 				},
 				['quests'] = {
+						5912, 5913, 5907, 5916, 5918, 5865, 5866, 5904, 5906, 5956, 5962, 5961, 5934, 
+						5915, 5958, 5927, 5928, 5924, 5925, 5929, 5930, 5926, 5910, 5911, 5908, 5909, 
+						6089, 6081, 6088, 6073, 6080, 6079, 6076, 6077, 6039, 6037, 
+						6041, 2952, 2975, 6042, 6070, 6071, 6024, 6106, 6072, 6107,
+						6159, 6152, 6158, 6157, 6156, 6160, 6084, 6085, 6086, 6087, 6082, 6083
+					--[[
 					-- Vvardenfell
-					[849] = {
+					[467] = {
 						5912, 5913, 5907, 5916, 5918, 5865, 5866, 5904, 5906, 5956, 5962, 5961, 5934, 
 						5915, 5958, 5927, 5928, 5924, 5925, 5929, 5930, 5926, 5910, 5911, 5908, 5909, 
 					},
 					-- Clockwork City
-					[980] = {
+					[589] = {
 						6089, 6081, 6088, 6073, 6080, 6079, 6076, 6077, 6039, 6037, 
-						6041, 2952, 2975, 6042, 6070, 6071, 6024, 6106, 6072, 6107
+						6041, 2952, 2975, 6042, 6070, 6071, 6024, 6106, 6072, 6107,
 					},
 					-- Summerset
-					[1011] = {
+					[616] = {
 						6159, 6152, 6158, 6157, 6156, 6160, 6084, 6085, 6086, 6087, 6082, 6083
 					},
+					]]
 				},
 			},
 			{ -- Zeal of Zenithar
@@ -202,41 +255,8 @@ local EVENTS = {
 					187746,187701,187700
 				},
 				['quests'] = {
-					[888] = {6750 }-- Honest Toil
-					
-				},
-			},
-			{ -- VAR_EVENT_DARKHEART
-				['eventType'] = VAR_EVENT_TYPE_TICKETS,
-				['rewardsBy'] = VAR_EVENT_TYPE_QUEST,
-				['maxDailyRewards'] = 2,
-				['itemIds'] = {
-					167226, 193761, 167227, 193762
-				},
-			},
-			{ -- VAR_EVENT_STEADFAST
-				['eventType'] = VAR_EVENT_TYPE_TICKETS,
-				['rewardsBy'] = VAR_EVENT_TYPE_QUEST,
-				['maxDailyRewards'] = 2,
-				['itemIds'] = {
-					190059, 190058,188255, 188251, 188254, 188252, 188256, 188253
-				},
-			},
-			
-			{ -- Season of the Dragon Celebration
-				['eventType'] = VAR_EVENT_TYPE_UNKNOWN,
-				['rewardsBy'] = VAR_EVENT_TYPE_LOOT,
-				['maxDailyRewards'] = 2,
-				['itemIds'] = {-- Elsweyr Coffer
-					175580, 193735, 175579, 193734
-				},
-				['quests'] = {
-					[1086] = { -- Northern Elsweyr
-						6357, 6378, 6382, 6377, 6380, 6379, 6381, 6359, 6362, 6361, 6363, 6360, 6356
-					},
-					[1133] = { -- Southern Elsweyr
-						6435, 3442, 6405, 6433, 6429, 6428, 6430, 6406
-					},
+					6750, 6749
+				--	[500] = {6750, 6749}
 					
 				},
 			},
@@ -245,10 +265,6 @@ local EVENTS = {
 	[VAR_EVENT_TYPE_UNKNOWN] = {
 	}
 }
-
----------------------------------------------------------------------------
--- 
----------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
 -- 
@@ -311,6 +327,7 @@ end
 ---------------------------------------------------------------------------
 -- 
 ---------------------------------------------------------------------------
+--[[
 local function isItemForEvent(itemIds, lootItemId)
 	for i, itemId in pairs(itemIds) do
 		if itemId == lootItemId then
@@ -320,26 +337,55 @@ local function isItemForEvent(itemIds, lootItemId)
 end
 
 local function isQuestForEvent(quests, questName)
-	local zoneQuests = quests[GetUnitZone('player')]
-	for k, questId in pairs(zoneQuests) do
-		if GetQuestName(questId) == questName then
+	local zoneQuests = quests[GetUnitZoneIndex('player')] or {}
+	for k, qName in pairs(zoneQuests) do
+		if qName == questName then
 			return true
 		end
 	end
 end
 
+local function processQuestNames(quests)
+	local _quests = {}
+	for zoneIndex, questIds in pairs(quests) do
+		local temp = {}
+		for zoneId, questId in pairs(questIds) do
+			table.insert(temp, GetQuestName(questId))
+		end
+		_quests[zoneIndex] = temp
+	end
+	return _quests
+end
+
+]]
+
 local function getDailyResetTimeRemainingSeconds()
 	return GetTimeUntilNextDailyLoginRewardClaimS()
+end
+
+local function mapIndexToQuestName(eventIndex, quests)
+	for zoneId, questId in pairs(quests) do
+		QUEST_TO_INDEX_MAP[GetQuestName(questId)] = eventIndex
+	end
+end
+
+local function mapIndexToItemId(eventIndex, items)
+	for zoneIndex, itemId in pairs(items) do
+		ITEM_TO_INDEX_MAP[itemId] = eventIndex
+	end
 end
 
 ---------------------------------------------------------------------------
 -- Dev debug
 ---------------------------------------------------------------------------
-local dev = false
+--	local dev = true
 -- Enabling dev allows testing event changes by collecting various raw crating materials.
 -- Useful when events are not running.
 -- It lowers the reset time to 1 minute and, has an event active for 5 minutes and 1 minute off,
 -- to simulate daily resets and, event ending and starting.
+
+local devTitles
+local devDescriptions
 if dev then
 	EVENTS[VAR_EVENT_TYPE_UNKNOWN] = {
 		{ -- Woodwork Raw Material
@@ -378,43 +424,95 @@ if dev then
 				0149, 77581, 150670, 30152, 30166, 30154, 0159
 			},
 		},
+		{ -- Vivec City Hall of Justice
+			['eventType'] = VAR_EVENT_TYPE_TICKETS,
+			['rewardsBy'] = VAR_EVENT_TICKETS_QUEST,
+			['maxDailyRewards'] = 2,
+			['quests'] = {
+				5906, 5904, 5866, 5865, 5918, 5916
+			--	[467] = {5906, 5904, 5866, 5865, 5918, 5916},
+			},
+		},
 	}
 
 	local counter = 0
 	local lastTime = 0
+	local numPerEvent = 2
+	local secsPerEvent = 30
 	getDailyResetTimeRemainingSeconds = function()
 		local frameTimeSeconds = GetFrameTimeSeconds()
-		if lastTime < frameTimeSeconds then
-			lastTime = frameTimeSeconds + 60
-			if counter == 5 then
+		if lastTime <= frameTimeSeconds then
+			lastTime = frameTimeSeconds + secsPerEvent
+			
+			if counter > (numPerEvent) then
 				counter = 0
+			else
+				counter = counter + 1
 			end
-			counter = counter + 1
 		end
 		
-		return math.floor(lastTime - frameTimeSeconds)
+		local secondsRemaining = math.floor(lastTime - frameTimeSeconds)
+		return secondsRemaining > 0 and secondsRemaining or 0
 	end
 	
 	-- the event will become inactive after 5 minutes
 	checkForActiveEvent = function(self)
-		local isActive = counter <= 5
+		local isActive = counter <= numPerEvent
 		if isActive then
-			self:SetActiveEventType(VAR_EVENT_TYPE_UNKNOWN)
+		--	self:SetActiveEventType(VAR_EVENT_TYPE_UNKNOWN)
 		else
 			self:SetActiveEventType(VAR_EVENT_TYPE_NONE)
 		end
 	
 		return isActive
 	end
+	
+	reward_type_event_tickets = REWARD_TYPE_MONEY
+	
+	devTitles = {
+		'Woodwork Raw Material',
+		'Blacksmith Raw Material',
+		'Clothier Raw Material',
+		'Reagents',
+		'Vivec City Daily Quests',
+	}
+
+	devDescriptions = {
+		'This is a test event. Updates on acquiring Woodwork Raw Material.',
+		'This is a test event. Updates on acquiring Blacksmith Raw Material.',
+		'This is a test event. Updates on acquiring Clothier Raw Material.',
+		'This is a test event. Updates on acquiring Reagents.',
+		'This is a test event. Updates on acquiring Vivec City Daily Quests from Beleru Omoril in the Hall of Justice.',
+	}
 end
 
 do
+--[[
 	local function mapEventByIndex(eventTable)
 		for _, eventInfo in ipairs(eventTable) do
+			if eventInfo.quests then
+				eventInfo.quests = processQuestNames(eventInfo.quests)
+			end
 			table.insert(EVENTS_TO_INDEX_MAP, eventInfo)
 			eventInfo.index = #EVENTS_TO_INDEX_MAP
 		end
 	end
+]]
+	
+	local function mapEventByIndex(eventTable)
+		for _, eventInfo in ipairs(eventTable) do
+			table.insert(EVENTS_TO_INDEX_MAP, eventInfo)
+			eventInfo.index = #EVENTS_TO_INDEX_MAP
+			
+			if eventInfo.quests then
+				mapIndexToQuestName(eventInfo.index, eventInfo.quests)
+			end
+			if eventInfo.items then
+				mapIndexToItemId(eventInfo.index, eventInfo.items)
+			end
+		end
+	end
+	
 	mapEventByIndex(EVENTS[VAR_EVENT_TYPE_TICKETS][VAR_EVENT_HAS_MAP_LOCATION])
 	mapEventByIndex(EVENTS[VAR_EVENT_TYPE_TICKETS][VAR_EVENT_NO_MAP_LOCATION])
 	mapEventByIndex(EVENTS[VAR_EVENT_TYPE_UNKNOWN])
@@ -427,9 +525,9 @@ local event = ZO_InitializingObject:Subclass()
 
 function event:Initialize(eventInfo)
 	zo_mixin(self, eventInfo)
-end
-
-function event:Update(newData)
+	
+	self.title = zo_strformat('<<1>> <<2>>', GetString('SI_EVENTS_MANAGER_TITLE', self.index), var_event_string)
+	self.description = GetString('SI_EVENTS_MANAGER_DESCRIPTION', self.index)
 end
 
 function event:GetIndex()
@@ -450,38 +548,61 @@ function event:IsSameEvent(eventIndex)
 end
 
 
+function event:GetTitle()
+	return self.title
+end
+
+function event:GetDescription()
+	return self.description
+end
+
+function event:GetInfo()
+	return self.title, self.description
+end
+
 
 function event:ReplaceMe()
 end
 
-
-
 ---------------------------------------------------------------------------
 -- lib
 ---------------------------------------------------------------------------
-local lib = ZO_InitializingObject:Subclass()
-lib.name = LIB_IDENTIFIER
-lib.version = LIB_VERSION
-_G[LIB_IDENTIFIER] = lib
+local lib = _G[LIB_IDENTIFIER]
 
-local svVersion = 1
-local svDefaults = {
-	eventData = var_blankEvent
-}
+lib.CheckForActiveEvent = checkForActiveEvent
+lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
 
-function lib:Initialize()
-	local function OnLoaded(_, name)
-		if name ~= LIB_IDENTIFIER then return end
-		EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_ADD_ON_LOADED)
-		
-		self.savedVars = ZO_SavedVars:NewAccountWide('LibSesonalEventManager_SV_Data', svVersion, nil, svDefaults, GetWorldName(), "$AllAccounts")
-		self.eventData = self.savedVars.eventData
-		
-		self:ChangeState(self:CheckForActiveEvent())
-		
-	--	self:RegisterHooks()
+-- used in debugging
+--lib.Events = EVENTS
+--lib.events_to_index_map = EVENTS_TO_INDEX_MAP
+--lib.quest_to_index_map = QUEST_TO_INDEX_MAP
+--lib.item_to_index_map = ITEM_TO_INDEX_MAP
+
+function lib:UpdateStrings()
+	local function compileDevStrings(stringTable, destination)
+		for i, _string in ipairs(stringTable) do
+			table.insert(destination, _string)
+		end
 	end
-	EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_ADD_ON_LOADED, OnLoaded)
+	
+	if dev then
+		compileDevStrings(devTitles, self.strings.titles)
+		compileDevStrings(devDescriptions, self.strings.descriptions)
+	end
+	
+	local strings = {}
+
+	for i, _string in ipairs(self.strings.titles) do
+		strings['SI_EVENTS_MANAGER_TITLE' .. i] = _string
+	end
+	for i, _string in ipairs(self.strings.descriptions) do
+		strings['SI_EVENTS_MANAGER_DESCRIPTION' .. i] = _string
+	end
+	
+	for stringId, stringValue in pairs(strings) do
+		ZO_CreateStringId(stringId, stringValue)
+		SafeAddVersion(stringId, 1)
+	end
 end
 
 function lib:ChangeState(eventActive)
@@ -490,6 +611,7 @@ function lib:ChangeState(eventActive)
 			-- activate
 			self:Activate()
 		end
+		self:UpdateEventData(self.eventData.eventIndex)
 	elseif self.active then
 		-- deactivate
 		self:Deactivate()
@@ -502,7 +624,6 @@ function lib:OnUpdate()
 	local eventActive = self:CheckForActiveEvent()
 	self:ChangeState(eventActive)
 	
-	self:UpdateEventData()
 	self:RegisterOnDailyReset()
 end
 
@@ -514,49 +635,21 @@ function lib:SetActive(active)
 	self.active = active
 end
 
---[[
--- This is used to automate the process of resetting
-function lib:RegisterHooks()
-    local function onInventorySingleSlotUpdate(eventId, bagId, slotId, isNewItem, itemIdsoundCategory, updateReason, stackCountChange)
-		if stackCountChange > 0 then
-			local itemId = GetItemId(bagId, slotId)
-			local eventIndex = getKnownEventByLootItem(itemId)
-			
-			local eventIndex, eventInfo self:GetEventInfoByItemId(itemId)
-			if eventIndex then
-				EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
-				self:UpdateEventData(eventIndex)
-			end
-		end
-    end
-	
-	local function updateList()
-		local lootData = LOOT_SHARED:GetSortedLootData()
-		for _, data in ipairs(lootData) do
-			if dev or data.currencyType == CURT_EVENT_TICKETS then
-				-- register inventory update if the event type is unknown
-				if self:GetActiveEventType() == VAR_EVENT_TYPE_UNKNOWN then
-					EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, onInventorySingleSlotUpdate)
-				end
-			end
-		end
-	end
-	
-	-- We'll watch for loot that has Event Tickets
-	for k, systemObject in pairs({LOOT_WINDOW, LOOT_WINDOW_GAMEPAD}) do
-		SecurePostHook(systemObject, "UpdateList", function()
-			updateList()
-		end)
-	end
-end
-]]
-
 function lib:RegisterEvents()
 	local function onQuestAdded(eventId, questIndex, questName)
-		if self:GetActiveEventType() == VAR_EVENT_TYPE_UNKNOWN then
-			local eventIndex, eventInfo self:GetEventInfoByQuestName(itemId)
-			if eventIndex then
-				self:UpdateEventData(eventIndex)
+		local rewardDataList = SYSTEMS:GetObject(ZO_INTERACTION_SYSTEM_NAME):GetRewardData(questIndex)
+		
+		if #rewardDataList == 0 then return end
+		-- We only need to refresh the interaction if event tickets are present.
+		for i, data in ipairs(rewardDataList) do
+			if data.rewardType == reward_type_event_tickets then
+				if self:GetActiveEventType() == VAR_EVENT_TYPE_UNKNOWN then
+					local eventIndex, eventInfo = self:GetEventInfoByQuestName(GetJournalQuestName(questIndex))
+					if eventIndex then
+						self:UpdateEventData(eventIndex)
+					end
+				end
+				return 
 			end
 		end
 	end
@@ -584,6 +677,15 @@ end
 
 function lib:RegisterOnDailyReset()
 	EVENT_MANAGER:UnregisterForUpdate(self.name .. '_OnUpdate')
+	
+	local secondsRemaining = getDailyResetTimeRemainingSeconds()
+	if secondsRemaining <= 0 then
+		zo_callLater(function()
+			self:RegisterOnDailyReset()
+		end, 1000)
+		return
+	end
+	
 	local function onUpdate()
 		if self.isUpdating then
 			-- In the case UpdateEventData was called by another function, we will run onUpdate again.
@@ -593,37 +695,38 @@ function lib:RegisterOnDailyReset()
 		end
 		self:OnUpdate()
 	end
-	EVENT_MANAGER:RegisterForUpdate(self.name .. '_OnUpdate', getDailyResetTimeRemainingSeconds() * 1000, onUpdate)
+	EVENT_MANAGER:RegisterForUpdate(self.name .. '_OnUpdate', secondsRemaining * 1000, onUpdate)
 end
 
 function lib:Activate()
 	-- I need to process savedVars to populate eventInfo
 	-- or do I load those up and save active state to savedVars
 	local eventIndex = self.eventData.eventIndex
-	
 --	if not eventIndex or self:GetActiveEventType() == VAR_EVENT_TYPE_UNKNOWN then
 	if not eventIndex or eventIndex == VAR_EVENT_NONE then
 		eventIndex = self:GetEventInfoByLocation()
 	end
 	
 	if eventIndex > VAR_EVENT_NONE then
-	--	self:CreateEvent(eventIndex)
-		self:UpdateEventData(eventIndex)
+	--	self:UpdateEventData(eventIndex)
 	end
+	self.eventData.eventIndex = eventIndex
 end
 
 function lib:Deactivate()
 	self:SetActiveEventType(VAR_EVENT_TYPE_NONE)
+	self.eventData.eventIndex = VAR_EVENT_NONE
+	
+	self:UnregisterEvents()
+	CALLBACK_MANAGER:FireCallbacks('On_Seasonal_Event_Updated')
 end
 
 function lib:CreateEvent(eventIndex)
---	d( '------ CreateEvent')
 	self.eventData.eventIndex = eventIndex
 	local eventInfo = self:GetEventInfoByIndex(eventIndex)
-
-	local newEvent = event:New(eventInfo)
 	
---	d( newEvent)
+	if not eventInfo then return end
+	local newEvent = event:New(eventInfo)
 	
 	self.currentEvent = newEvent
 	self:SetActiveEventType(eventInfo.eventType)
@@ -631,11 +734,10 @@ end
 
 function lib:UpdateEventData(eventIndex)
 	self.isUpdating = true
+	if eventIndex == VAR_EVENT_NONE then return end
 	
 	if eventIndex then
 		self:CreateEvent(eventIndex)
-	else
-		-- Handled in Deactivate
 	end
 	
 	CALLBACK_MANAGER:FireCallbacks('On_Seasonal_Event_Updated', self:IsEventActive(), self.currentEvent)
@@ -667,8 +769,6 @@ function lib:GetEventInfoByLocation()
 	return VAR_EVENT_UNKNOWN
 end
 
-lib.CheckForActiveEvent = checkForActiveEvent
-
 ---------------------------------------------------------------------------
 -- API
 ---------------------------------------------------------------------------
@@ -676,6 +776,7 @@ function lib:GetEventInfoByIndex(eventIndex)
 	return EVENTS_TO_INDEX_MAP[eventIndex]
 end
 
+--[[
 function lib:GetEventInfoByItemId(itemId)
 	for eventIndex, eventInfo in pairs(EVENTS_TO_INDEX_MAP) do
 		if eventInfo.itemIds and isItemForEvent(eventInfo.itemIds, itemId) then
@@ -691,9 +792,18 @@ function lib:GetEventInfoByQuestName(questName)
 		end
 	end
 end
+]]
+
+function lib:GetEventInfoByItemId(itemId)
+	return ITEM_TO_INDEX_MAP[itemId]
+end
+
+function lib:GetEventInfoByQuestName(questName)
+	return QUEST_TO_INDEX_MAP[questName]
+end
 
 function lib:IsEventActive()
-	return self.eventType ~= VAR_EVENT_TYPE_NONE
+	return self.eventData.eventType ~= VAR_EVENT_TYPE_NONE
 end
 
 function lib:GetActiveEventIndex()
@@ -717,7 +827,7 @@ function lib:GetEventIndexByFilter(eventType)
 end
 
 function lib:WouldTicketsExcedeMax(eventTickets)
-	return ZO_SharedInteraction:WouldCurrencyExceedMax(REWARD_TYPE_EVENT_TICKETS, eventTickets)
+	return ZO_SharedInteraction:WouldCurrencyExceedMax(reward_type_event_tickets, eventTickets)
 end
 
 function lib:RegisterUpdateCallback(callback)
@@ -726,15 +836,13 @@ function lib:RegisterUpdateCallback(callback)
 		callback(self:IsEventActive(), self.currentEvent)
 	end
 	CALLBACK_MANAGER:RegisterCallback('On_Seasonal_Event_Updated', callback)
+	self:RegisterOnDailyReset()
 end
 
-lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
 ---------------------------------------------------------------------------
 -- 
 ---------------------------------------------------------------------------
 IJA_Seasonal_Event_Manager = lib:New()
-
-
 
 --[[
 /script IJA_Seasonal_Event_Manager.savedVars = {}

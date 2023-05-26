@@ -5,6 +5,34 @@ if _G[LIB_IDENTIFIER] and _G[LIB_IDENTIFIER].version > LIB_VERSION then
 	return
 end
 
+--[[
+	This lib is self running.
+	Using it normally should only require registering the update callback.
+	
+	The callback returns ([bool]eventActive, [object]eventOject)
+		eventActive (true or false)
+		
+		
+	This lib checks for running events on load and, on daily reset. 
+	then, if an event is active, creates the eventObject based on 1 of the 4 detectable events, 
+	or default info to be updated later by quest or item loot.
+		
+	eventOject:GetIndex()
+		Used mainly by the lib to get the event info or saving by the add-on to compare later.
+	eventOject:GetType()
+		Currently, eventType is none, unknown, tickets
+	eventOject:GetRewardsBy()
+		Loot, quest, target (Jubilee Cake)
+	eventOject:GetMaxDailyRewards()
+		Last known amount of special rewards. Number of tickets per day
+	eventOject:IsSameEvent(eventIndex)
+		Used in add-ons to see if it's the same event that was previously running
+		if add-on is saving eventIndex
+		
+		
+		May add more eventOject functions later for descriptions and other event info.
+]]
+
 ---------------------------------------------------------------------------
 -- Locals
 ---------------------------------------------------------------------------
@@ -307,7 +335,7 @@ end
 ---------------------------------------------------------------------------
 -- Dev debug
 ---------------------------------------------------------------------------
-local dev = true
+local dev = false
 -- Enabling dev allows testing event changes by collecting various raw crating materials.
 -- Useful when events are not running.
 -- It lowers the reset time to 1 minute and, has an event active for 5 minutes and 1 minute off,
@@ -642,7 +670,7 @@ end
 lib.CheckForActiveEvent = checkForActiveEvent
 
 ---------------------------------------------------------------------------
--- ADI
+-- API
 ---------------------------------------------------------------------------
 function lib:GetEventInfoByIndex(eventIndex)
 	return EVENTS_TO_INDEX_MAP[eventIndex]
@@ -676,7 +704,7 @@ function lib:GetActiveEventType()
 	return self.eventData.eventType
 end
 
-function lib:GetEventData()
+function lib:GetEventData() -----------
 	return self.eventData
 end
 
@@ -715,30 +743,30 @@ IJA_Seasonal_Event_Manager = lib:New()
 
 ]]
 --[[ Example usage
-IJA_Seasonal_Event_Manager:WouldTicketsExcedeMax(eventTickets)
+local wouldTicketsExcedeMax = IJA_Seasonal_Event_Manager:WouldTicketsExcedeMax(eventTickets)
 
 
-	local function hasEventChanged(eventIndex)
-	-- compare with the eventIndex saved in the add-on's savedvariables
-		return self:GetEventIndex() ~= eventIndex
+	local function onSeasonalEventUpdate(active, eventObject)
+		if eventObject == nil then return end
+		
+		if eventObject:GetRewardsBy() > VAR_EVENT_TICKETS_NONE then
+			if active then
+				local lastEventIndex = self.savedVars.eventInfo.eventIndex
+				if not eventObject:IsSameEvent(lastEventIndex) then
+					-- start new event
+					self:SetUpEvent(eventObject)
+				else
+					-- reset for dailies?
+					self:ResetDailyInfo()
+				end
+				self:UpdateDailyIconTexture()
+			end
+			
+			self:RefreshGamepadMenu()
+			self:ChangeState(active)
+		end
 	end
 	
-	local function onSeasonalEventUpdate(eventData)
-		if eventData.active then
-			if hasEventChanged(eventData.eventIndex) then
-				-- start new event
-				self.savedVars.eventInfo = eventData.eventInfo
-				self:UpdateResetTime()
-			else
-				-- reset for dailies?
-				self:ResetDailyInfo()
-			end
-			self:UpdateDailyIconTexture()
-		end
-		
-		self:ChangeState(eventData.active)
-		self:RefreshGamepadMenu()
-	end
 	IJA_Seasonal_Event_Manager:RegisterUpdateCallback(onSeasonalEventUpdate)
 ]]
 

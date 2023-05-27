@@ -1,5 +1,5 @@
 
-local ignore = true
+local ignore = false
 
 if ignore then return end
 
@@ -9,6 +9,27 @@ if _G[LIB_IDENTIFIER] and _G[LIB_IDENTIFIER].version > LIB_VERSION then
 end
 
 local lib = _G[LIB_IDENTIFIER]
+
+local l_EVENT_NONE			= lib.constants.currentEventNone
+local l_EVENT_UNKNOWN		= lib.constants.currentEventUnknown
+
+local l_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
+local l_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
+local l_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
+
+local l_REWARDS_BY_NONE		= lib.constants.rewardsByNone
+local l_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
+local l_REWARDS_BY_QUEST	= lib.constants.rewardsByQuest
+local l_REWARDS_BY_LOOT		= lib.constants.rewardsByLoot
+local l_REWARDS_BY_TARGET	= lib.constants.rewardsByTarget
+
+
+lib.eventsToIndexMap[l_EVENT_UNKNOWN] = {
+	['index'] = 1,
+	['eventType'] = l_EVENT_TYPE_TICKETS,
+	['rewardsBy'] = l_REWARDS_BY_UNKNOWN,
+	['maxDailyRewards'] = 0,
+}
 
 -- Event run time simulation.
 local lastTime = 0
@@ -32,8 +53,15 @@ local function getDailyResetTimeRemainingSeconds()
 end
 lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
 
-local function checkForActiveEvent()
-	return daysPast <= daysPerEvent
+local function checkForActiveEvent(self)
+	local isActive = daysPast <= daysPerEvent
+	
+	if isActive then
+		self:SetActiveEventType(l_EVENT_TYPE_TICKETS)
+	else
+		self:SetActiveEventType(l_EVENT_TYPE_NONE)
+	end
+	return isActive
 end
 lib.CheckForActiveEvent = checkForActiveEvent
 

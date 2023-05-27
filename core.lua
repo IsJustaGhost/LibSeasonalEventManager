@@ -4,6 +4,8 @@ if _G[LIB_IDENTIFIER] and _G[LIB_IDENTIFIER].version > LIB_VERSION then
 	return
 end
 
+local lib = _G[LIB_IDENTIFIER]
+
 --[[
 	This lib is self running.
 	Using it normally should only require registering the update callback.
@@ -78,12 +80,20 @@ local l_REWARDS_BY_TARGET	= lib.constants.rewardsByTarget
 
 local l_EmptyString 		= lib.constants.stringEmpty
 
+local getString 			= lib.GetString
+
 local defaultEventInfo = {
 	['index'] 		= l_EVENT_NONE,
 	['eventType'] 	= l_EVENT_TYPE_NONE,
 	['rewardsBy'] 	= l_REWARDS_BY_NONE,
 }
 
+
+local questTypes = {
+	[QUEST_TYPE_NONE] = true,
+	[QUEST_TYPE_GROUP] = true,
+	[QUEST_TYPE_HOLIDAY_EVENT] = true,
+}
 
 ---------------------------------------------------------------------------
 -- 
@@ -214,8 +224,6 @@ local defaultEvent = event_class:New(defaultEventInfo)
 ---------------------------------------------------------------------------
 -- lib
 ---------------------------------------------------------------------------
-local lib = _G[LIB_IDENTIFIER]
-
 local svVersion = 1
 local svDefaults = {
 	eventData = {
@@ -236,7 +244,6 @@ function lib:Initialize()
 		
 		local function onPlayerActivated()
 			EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_ADD_ON_LOADED)
-			
 		--	d( '|cFF00FF' .. LIB_IDENTIFIER '|r' .. " version: " .. LIB_VERSION)
 		end
 		EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_PLAYER_ACTIVATED, onPlayerActivated)
@@ -257,9 +264,20 @@ function lib:CheckForActiveEvent()
 end
 
 function lib:Activate()
-	
 	self:ResetToSavedEvent()
 	
+	if self:GetActiveEventIndex() == l_EVENT_UNKNOWN then
+        for questIndex = 1, GetNumJournalQuests() do
+			local questName, _, _, _, _, _, _, _, _, questType = GetJournalQuestInfo(questIndex)
+			if questTypes[questType] then
+				local eventIndex = self:GetEventIndexByQuestName(questName)
+				if eventIndex then
+					self:UpdateActiveEventIndex(eventIndex)
+					return
+				end
+			end
+        end
+	end
 end
 
 function lib:Deactivate()
@@ -285,7 +303,7 @@ function lib:OnUpdate()
 			-- activate
 			self:Activate()
 		end
-		self:UpdateEventData(self.eventData.eventIndex)
+		self:UpdateActiveEventIndex(self.eventData.eventIndex)
 	else
 		-- deactivate
 		self:Deactivate()
@@ -303,8 +321,10 @@ function lib:RegisterEvents()
 		if #rewardDataList == 0 then return end
 		-- We only need to refresh the interaction if event tickets are present.
 		for i, data in ipairs(rewardDataList) do
+			d( data.rewardType == REWARD_TYPE_EVENT_TICKETS)
 			if data.rewardType == REWARD_TYPE_EVENT_TICKETS then
 				if self:GetActiveEventType() == l_EVENT_TYPE_UNKNOWN then
+					d( 'onQuestAdded')
 					local eventIndex = self:GetEventIndexByQuestName(questName)
 					if eventIndex then
 						self:UpdateActiveEventIndex(eventIndex)
@@ -361,14 +381,24 @@ function lib:ResetToSavedEvent()
 	end
 end
 
+function lib:SetActive(isEventActive)
+	self.active = isEventActive
+end
+
+function lib:SetActiveEventType(eventType)
+	self.eventData.eventType = eventType
+end
+
 function lib:UnregisterEvents()
 	EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_QUEST_ADDED)
 	EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
 end
 
 function lib:UpdateActiveEvent(eventIndex)
+	d( '----- UpdateActiveEvent', eventIndex)
 	local eventInfo = self:GetEventInfoByIndex(eventIndex)
 	
+	d( eventInfo)
 	if eventInfo ~= nil then
 		local newEvent = event_class:New(eventInfo)
 		self.currentEvent = newEvent
@@ -376,7 +406,7 @@ function lib:UpdateActiveEvent(eventIndex)
 	end
 	
 	-- Need to set up events if the event was not detected.
-	if self.currentEvent:GetType() > l_EVENT_TYPE_UNKNOWN then
+	if self:GetActiveEventType() > l_EVENT_TYPE_UNKNOWN then
 		self:UnregisterEvents()
 	else
 		self:RegisterEvents()
@@ -385,8 +415,11 @@ function lib:UpdateActiveEvent(eventIndex)
 end
 
 function lib:UpdateActiveEventIndex(eventIndex)
+	d( '----- UpdateActiveEventIndex', eventIndex)
+	
 	local function isNewEvent(eventIndex)
-		return self.eventData.eventIndex ~= eventIndex
+	--	return self.eventData.eventIndex ~= eventIndex
+		return self:GetActiveEventIndex() ~= eventIndex
 	end
 	
 	if eventIndex == l_EVENT_NONE then
@@ -406,6 +439,14 @@ function lib:GetEventInfoByIndex(eventIndex)
 	return self.eventsToIndexMap[eventIndex]
 end
 
+function lib:GetEventIndexByQuestName(questName)
+	return self.indexToQuestNameMap[questName]
+end
+
+function lib:GetEventIndexByItemId(itemId)
+	return self.indexToItemIdMap[itemId]
+end
+
 function lib:GetEventIndexByVisibleLocation()
 	for eventIndex, location in pairs(self.locationToIndexMap) do
 		if doesEventHaveVisiblePin(location) then
@@ -420,59 +461,50 @@ end
 -- Deferred initialization
 ---------------------------------------------------------------------------
 -- Mapping the event data allow for simplifying lookup.
-
 do
-	local keys = {
-		[1] = 'indexToQuestNameMap',
-		[2] = 'indexToItemIdMap',
-		[3] = 'indexToTargetNameMap',
-	}
-
-	function lib:MapIndexByKey(key, eventIndex, source, indexFunc)
-		for zoneId, questId in pairs(quests) do
-			self[key][indexFunc(questId)] = eventIndex
+	local function mapIndexByKey(self, key, eventIndex, source, indexFunc)
+		for zoneId, index in pairs(source) do
+			self[key][indexFunc(index)] = eventIndex
 		end
 	end
-end
-
-function lib:MapEventInfo()
-	local function mapIndexToQuestName(eventIndex, quests)
-		self:MapIndexByKey(keys[1], eventIndex, quests, function(questId) return GetQuestName(questId) end)
+	
+	local function mapIndexToQuestName(self, eventIndex, quests)
+		mapIndexByKey(self, 'indexToQuestNameMap', eventIndex, quests, function(questId) return GetQuestName(questId) end)
+	end
+	local function mapIndexToItemId(self, eventIndex, items)
+		mapIndexByKey(self, 'indexToItemIdMap', eventIndex, items, function(itemId) return itemId end)
+	end
+	local function mapIndexToTargetName(self, eventIndex, targets)
+		mapIndexByKey(self, 'indexToTargetNameMap', eventIndex, targets, function(target) return getString(target) end)
 	end
 
-	local function mapIndexToItemId(eventIndex, items)
-		self:MapIndexByKey(keys[2], eventIndex, items, function(itemId) return itemId end)
-	end
-
-	local function mapIndexToTargetName(eventIndex, targets)
-		self:MapIndexByKey(keys[3], eventIndex, targets, function(target) return getString(target) end)
-	end
-
-	local function mapLocationToIndex(eventIndex, location)
+	local function mapLocationToIndex(self, eventIndex, location)
 		self.locationToIndexMap[eventIndex] = location
 	end
 	
-	local eventsToIndexMap = self.eventsToIndexMap
-	
-	for _, eventInfo in ipairs(self.events) do
-		table.insert(eventsToIndexMap, eventInfo)
-		eventInfo.index = #eventsToIndexMap
+	function lib:MapEventInfo()
+		local eventsToIndexMap = self.eventsToIndexMap
 		
-		if eventInfo.quests then
-			mapIndexToQuestName(eventInfo.index, eventInfo.quests)
+		for _, eventInfo in ipairs(self.events) do
+			table.insert(eventsToIndexMap, eventInfo)
+			eventInfo.index = #eventsToIndexMap
+			
+			if eventInfo.quests then
+				mapIndexToQuestName(self, eventInfo.index, eventInfo.quests)
+			end
+			if eventInfo.items then
+				mapIndexToItemId(self, eventInfo.index, eventInfo.items)
+			end
+			if eventInfo.targets then
+				mapIndexToTargetName(self, eventInfo.index, eventInfo.targets)
+			end
+			if eventInfo.location then
+				mapLocationToIndex(self, eventInfo.index, eventInfo.location)
+			end
 		end
-		if eventInfo.items then
-			mapIndexToItemId(eventInfo.index, eventInfo.items)
-		end
-		if eventInfo.targets then
-			mapIndexToTargetName(eventInfo.index, eventInfo.items)
-		end
-		if eventInfo.location then
-			mapLocationToIndex(eventInfo.index, eventInfo.location)
-		end
-	end
 
-	self.eventsToIndexMap = eventsToIndexMap
+		self.eventsToIndexMap = eventsToIndexMap
+	end
 end
 
 function lib:RegisterStrings()
@@ -509,11 +541,14 @@ function lib:IsEventActive()
 end
 
 function lib:GetActiveEventIndex()
-	return self.currentEvent:GetIndex()
+	if self.currentEvent then
+		return self.currentEvent:GetIndex()
+	end
+	return l_EVENT_NONE
 end
 
 function lib:GetActiveEventType()
-	return self.eventData.eventType
+	return self.eventData.eventType or l_EVENT_TYPE_NONE
 end
 
 function lib:GetCurrentEvent()
@@ -529,10 +564,12 @@ function lib:WouldTicketsExcedeMax(eventTickets)
 end
 
 function lib:RegisterUpdateCallback(callback)
-	self:OnDeferedInitialize()
+	self:OnDeferredInitialize()
 	-- We want to fire the callback immediately so the addon gets updated without having to wait for event updates.
 	if self.eventData then
-		callback(self.active, self:GetCurrentEvent())
+		zo_callLater(function()
+			callback(self.active, self:GetCurrentEvent())
+		end, 1000)
 	end
 	CALLBACK_MANAGER:RegisterCallback('On_Seasonal_Event_Updated', callback)
 end
@@ -581,6 +618,15 @@ IJA_Seasonal_Event_Manager = lib:New()
 /script d( IJA_Seasonal_Event_Manager:GetEventInfo())
 /script d( IJA_Seasonal_Event_Manager:GetEventMaxDailyRewards())
 
+        for questIndex = 1, GetNumJournalQuests() do
+			local questName, _, _, _, _, _, _, _, _, questType = GetJournalQuestInfo(questIndex)
+			if questType == then
+				local eventIndex = self:GetEventIndexByQuestName(questName)
+				if eventIndex then
+					self:UpdateActiveEventIndex(eventIndex)
+				end
+			end
+        end
 ]]
 
 --[[ Example usage

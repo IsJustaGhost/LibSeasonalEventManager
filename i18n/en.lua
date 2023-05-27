@@ -15,6 +15,15 @@ lib.strings.titles = {
 	'Season of the Dragon Celebration',
 	'Daedric War Celebration Event',
 	'Zeal of Zenithar',
+	'Dark Heart of Skyrim Celebration',
+
+--	'Explorer's Celebration', -- No Impresario 
+
+--	'Deathmatch Battleground Weekend',
+--	'Crazy King Battleground Weekend',
+--	'Chaosball Battleground Weekend',
+--	'Capture the Relic Battleground Weekend',
+--	'',
 }
 
 
@@ -30,5 +39,10 @@ lib.strings.descriptions = {
 	'During this event you will receive bonus loot, rewards and Event Tickets from exploring and questing within the Northern and Southern Elsweyr zones.',
 	'The main feature of this event is numerous drops in Vvardenfell, the Clockwork City, Summerset, and Artaeum being doubled, including: Halls of Fabrication, Asylum Sanctorium, and Cloudrest Trial Bosses, Daily Delve and World Boss quest rewards, and crafting nodes.',
 	'Complete any one of the goals of the daily quest Honest Toil to acquire Event Tickets and a gold-quality reward box: Zenithar\'s Sublime Parcel. Throughout the event you have a chance to receive purple-quality reward coffers, Zenithar\'s Delightful Parcels, through the various activities.',
+	'The main feature of this event is numerous drops in Western Skyrim and the Reach being doubled, including: Kyne\'s Aegis and Vateshran Hollows, Trial Bosses, Daily Delve and World Boss quest rewards, and crafting nodes. Additionally, all bosses from the aforementioned trials, Icereach, Unhallowed Grave, Castle Thorn, and Stone Garden and the Delve and World Bosses will also drop additional loot.',
+
+--	'',
+--	'',
+--	'',
 }
 

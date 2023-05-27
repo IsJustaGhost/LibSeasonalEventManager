@@ -99,7 +99,7 @@ local VAR_EVENT_TICKETS_TARGET	= 4
 
 local reward_type_event_tickets	= REWARD_TYPE_EVENT_TICKETS
 local var_event_string = GetString(SI_NOTIFICATIONTYPE19)
-
+local var_EmptyString = ''
 
 local var_defaultEvent = {
 	['index'] 		= VAR_EVENT_UNKNOWN,
@@ -194,7 +194,7 @@ local EVENTS = {
 					171268,156717,156679
 				},
 			},
-			-- discarded?
+			-- ?
 			{ -- Season of the Dragon Celebration
 				['eventType'] = VAR_EVENT_TYPE_UNKNOWN,
 				['rewardsBy'] = VAR_EVENT_TYPE_LOOT,
@@ -219,7 +219,7 @@ local EVENTS = {
 			{ -- Daedric War Celebration Event
 				['eventType'] = VAR_EVENT_TYPE_TICKETS,
 				['rewardsBy'] = VAR_EVENT_TYPE_QUEST,
-				['maxDailyRewards'] = 3,
+				['maxDailyRewards'] = 2,
 				['itemIds'] = {
 					182592,182599,171480,171476
 				},
@@ -258,6 +258,19 @@ local EVENTS = {
 					6750, 6749
 				--	[500] = {6750, 6749}
 					
+				},
+			},
+			{ -- Dark Heart of Skyrim Celebration
+				['eventType'] = VAR_EVENT_TYPE_TICKETS,
+				['rewardsBy'] = VAR_EVENT_TYPE_QUEST,
+				['maxDailyRewards'] = 2,
+				['itemIds'] = {
+					193762
+				},
+				['quests'] = {
+					6512, 6527, 6519, 6517, 6509, 6526, 6518, 6494, 6524, 6493, 6495, 6520, 6523,
+					6559, 6585, 6556, 6582, 6583, 6584, 6581, 6573, 6557, 6569, 6571, 6567, 6572,
+					6603, 6604, 6600, 6605, 6602, 6606, 6601, 6610, 6561
 				},
 			},
 		},
@@ -378,7 +391,7 @@ end
 ---------------------------------------------------------------------------
 -- Dev debug
 ---------------------------------------------------------------------------
---	local dev = true
+	local dev = true
 -- Enabling dev allows testing event changes by collecting various raw crating materials.
 -- Useful when events are not running.
 -- It lowers the reset time to 1 minute and, has an event active for 5 minutes and 1 minute off,
@@ -437,7 +450,7 @@ if dev then
 
 	local counter = 0
 	local lastTime = 0
-	local numPerEvent = 2
+	local numPerEvent = 5
 	local secsPerEvent = 30
 	getDailyResetTimeRemainingSeconds = function()
 		local frameTimeSeconds = GetFrameTimeSeconds()
@@ -840,6 +853,37 @@ function lib:RegisterUpdateCallback(callback)
 end
 
 ---------------------------------------------------------------------------
+-- currentEvent info
+---------------------------------------------------------------------------
+function lib:GetEventTitle()
+	if self.currentEvent then
+		return self.currentEvent:GetTitle()
+	end
+	return var_EmptyString
+end
+
+function lib:GetEventDescription()
+	if self.currentEvent then
+		return self.currentEvent:GetDescription()
+	end
+	return var_EmptyString
+end
+
+function lib:GetEventInfo()
+	if self.currentEvent then
+		return self.currentEvent:GetInfo()
+	end
+	return var_EmptyString, var_EmptyString
+end
+
+function lib:GetEventMaxDailyRewards()
+	if self.currentEvent then
+		return self.currentEvent:GetMaxDailyRewards()
+	end
+	return VAR_EVENT_NONE
+end
+
+---------------------------------------------------------------------------
 -- 
 ---------------------------------------------------------------------------
 IJA_Seasonal_Event_Manager = lib:New()
@@ -847,9 +891,13 @@ IJA_Seasonal_Event_Manager = lib:New()
 --[[
 /script IJA_Seasonal_Event_Manager.savedVars = {}
 
-
+/script d( IJA_Seasonal_Event_Manager:GetEventTitle())
+/script d( IJA_Seasonal_Event_Manager:GetEventDescription())
+/script d( IJA_Seasonal_Event_Manager:GetEventInfo())
+/script d( IJA_Seasonal_Event_Manager:GetEventMaxDailyRewards())
 
 ]]
+
 --[[ Example usage
 local wouldTicketsExcedeMax = IJA_Seasonal_Event_Manager:WouldTicketsExcedeMax(eventTickets)
 

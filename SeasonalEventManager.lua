@@ -539,7 +539,7 @@ local event = ZO_InitializingObject:Subclass()
 function event:Initialize(eventInfo)
 	zo_mixin(self, eventInfo)
 	
-	self.title = zo_strformat('<<1>> <<2>>', GetString('SI_EVENTS_MANAGER_TITLE', self.index), var_event_string)
+	self.title = zo_strformat('<<1>> <<2>>', GetString('SI_EVENTS_MANAGER_TITLE', self.index), GetString(SI_NOTIFICATIONTYPE19))
 	self.description = GetString('SI_EVENTS_MANAGER_DESCRIPTION', self.index)
 end
 

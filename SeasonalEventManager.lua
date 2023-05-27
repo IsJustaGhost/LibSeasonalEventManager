@@ -60,46 +60,24 @@ end
 ---------------------------------------------------------------------------
 -- Locals
 ---------------------------------------------------------------------------
--- returns [int]day, [int]month, [int]year
-local function getCurrentDate()
-	local date = os.date ("*t")
-	return tonumber(date.day), tonumber(date.month), tonumber(date.year)
-end
 
--- Get language specific collectible name
-local jubileeCake2016 = GetCollectibleName(356)
-local currentYearJubileeCake = zo_strformat(jubileeCake2016:gsub('[%d]+', '<<1>>'), select(3, getCurrentDate()))
+local VAR_TICKETS_MAX			= lib.constants.maxTickets
+local VAR_EVENT_NONE			= lib.constants.currentEventNone
+local VAR_EVENT_UNKNOWN			= lib.constants.currentEventUnknown
 
-local VAR_TICKETS_MAX	= 12
+local VAR_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
+local VAR_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
+local VAR_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
 
-local VAR_EVENT_NONE			= 0
-local VAR_EVENT_UNKNOWN			= 1
---local VAR_EVENT_ANNIVERSARY		= 2
---local VAR_EVENT_JESTER			= 3
---local VAR_EVENT_MAYHEM			= 4
---local VAR_EVENT_WITCHES			= 5
---local VAR_EVENT_MAX_KNOWN		= 5
+local VAR_EVENT_TICKETS_NONE	= lib.constants.rewardsByNone
+local VAR_EVENT_TICKETS_UNKNOWN	= lib.constants.rewardsByUnknown
+local VAR_EVENT_TICKETS_QUEST	= lib.constants.rewardsByQuest
+local VAR_EVENT_TICKETS_LOOT	= lib.constants.rewardsByLoot
+local VAR_EVENT_TICKETS_TARGET	= lib.constants.rewardsByTarget
 
-local VAR_EVENT_NEWLIFE			= 6
-local VAR_EVENT_UNDAUNTED		= 7
-local VAR_EVENT_TRIBUNAL		= 8
-local VAR_EVENT_ZENITHAR		= 9
-local VAR_EVENT_DARKHEART		= 10
-local VAR_EVENT_STEADFAST		= 11
-
-local VAR_EVENT_TYPE_NONE		= 0
-local VAR_EVENT_TYPE_UNKNOWN	= 1
-local VAR_EVENT_TYPE_TICKETS	= 2
-
-local VAR_EVENT_TICKETS_NONE	= 0
-local VAR_EVENT_TICKETS_UNKNOWN	= 1
-local VAR_EVENT_TICKETS_QUEST	= 2
-local VAR_EVENT_TICKETS_LOOT	= 3
-local VAR_EVENT_TICKETS_TARGET	= 4
+local var_EmptyString 			= lib.constants.stringEmpty
 
 local reward_type_event_tickets	= REWARD_TYPE_EVENT_TICKETS
-local var_event_string = GetString(SI_NOTIFICATIONTYPE19)
-local var_EmptyString = ''
 
 local var_defaultEvent = {
 	['index'] 		= VAR_EVENT_UNKNOWN,

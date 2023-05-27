@@ -15,7 +15,8 @@ end
 
 lib.GetCurrentYear = getCurrentYear
 
-lib.GetString = function getString(str)
+-- Need to set up this before "events.lua".
+lib.GetString = function(str)
 	if type(str) == 'function' then
 		return str()
 	end
@@ -32,24 +33,23 @@ lib.constants = {}
 
 -- Get language specific collectible name for current year
 local jubileeCake2016 = GetCollectibleName(356)
-function getCurrentJubileeCakeName()
+lib.constants.currentJubileeCakeName = function()
+	-- How will this work on jp and other nonstandard text?
 	return zo_strformat(jubileeCake2016:gsub('[%d]+', '<<1>>'), select(3, getCurrentYear()))
 end
 
-lib.constants.currentJubileeCakeName = getCurrentJubileeCakeName
-
-lib.constants.maxTickets = 12
-lib.constants.currentEventNone = 0
-lib.constants.currentEventUnknown = 1
-lib.constants.eventTypeNone = 0
-lib.constants.eventTypeUnknown = 1
-lib.constants.eventTypeTickets = 2
-lib.constants.rewardsByNone = 0
-lib.constants.rewardsByUnknown = 1
-lib.constants.rewardsByQuest = 2
-lib.constants.rewardsByLoot = 3
-lib.constants.rewardsByTarget = 4
-lib.constants.stringEmpty = ''
+lib.constants.maxTickets			= 12
+lib.constants.currentEventNone		= 0
+lib.constants.currentEventUnknown	= 1
+lib.constants.eventTypeNone			= 0
+lib.constants.eventTypeUnknown		= 1
+lib.constants.eventTypeTickets		= 2
+lib.constants.rewardsByNone			= 0
+lib.constants.rewardsByUnknown		= 1
+lib.constants.rewardsByQuest		= 2
+lib.constants.rewardsByLoot			= 3
+lib.constants.rewardsByTarget		= 4
+lib.constants.stringEmpty			= ''
 
 --[[
 local l_EVENT_ANNIVERSARY		= 2

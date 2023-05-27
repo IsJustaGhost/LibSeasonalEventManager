@@ -54,6 +54,8 @@ function lib:Initialize()
 		self.savedVars = ZO_SavedVars:NewAccountWide('LibSesonalEventManager_SV_Data', svVersion, nil, svDefaults, GetWorldName(), "$AllAccounts")
 		self.eventData = self.savedVars.eventData
 		
+		self:SetActiveEventType(VAR_EVENT_TYPE_NONE)
+		
 		self:UpdateStrings()
 		self:ChangeState(self:CheckForActiveEvent())
 	end

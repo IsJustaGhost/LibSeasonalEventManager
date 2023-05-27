@@ -77,8 +77,6 @@ local VAR_EVENT_TICKETS_TARGET	= lib.constants.rewardsByTarget
 
 local var_EmptyString 			= lib.constants.stringEmpty
 
-local reward_type_event_tickets	= REWARD_TYPE_EVENT_TICKETS
-
 local var_defaultEvent = {
 	['index'] 		= VAR_EVENT_UNKNOWN,
 	['eventType'] = VAR_EVENT_TYPE_UNKNOWN,
@@ -303,18 +301,6 @@ local function isImpresarioVisible()
 	return isTicketEvent, VAR_EVENT_TYPE_TICKETS
 end
 
-local function checkForActiveEvent(self)
-	local isActive = isImpresarioVisible()
-	
-	if isActive then
-		self:SetActiveEventType(VAR_EVENT_TYPE_TICKETS)
-	else
-		self:SetActiveEventType(VAR_EVENT_TYPE_NONE)
-	end
-	
-	return isActive
-end
-
 ---------------------------------------------------------------------------
 -- 
 ---------------------------------------------------------------------------
@@ -366,148 +352,6 @@ local function mapIndexToItemId(eventIndex, items)
 	end
 end
 
----------------------------------------------------------------------------
--- Dev debug
----------------------------------------------------------------------------
-	local dev = true
--- Enabling dev allows testing event changes by collecting various raw crating materials.
--- Useful when events are not running.
--- It lowers the reset time to 1 minute and, has an event active for 5 minutes and 1 minute off,
--- to simulate daily resets and, event ending and starting.
-
-local devTitles
-local devDescriptions
-if dev then
-	EVENTS[VAR_EVENT_TYPE_UNKNOWN] = {
-		{ -- Woodwork Raw Material
-			['eventType'] = VAR_EVENT_TYPE_TICKETS,
-			['rewardsBy'] = VAR_EVENT_TYPE_TARGET,
-			['maxDailyRewards'] = 2,
-			['itemIds'] = {
-				4439, 23117, 818, 23118, 23137, 802, 23138, 521, 71199, 23119
-			},
-		},
-		{ -- Blacksmith Raw Material
-			['eventType'] = VAR_EVENT_TYPE_TICKETS,
-			['rewardsBy'] = VAR_EVENT_TICKETS_LOOT,
-			['maxDailyRewards'] = 2,
-			['itemIds'] = {
-				4482, 23104, 23105, 23133, 5820, 808, 23103, 23134, 71198, 23135
-			},
-		},
-		{ -- Clothier Raw Material
-			['eventType'] = VAR_EVENT_TYPE_TICKETS,
-			['rewardsBy'] = VAR_EVENT_TICKETS_LOOT,
-			['maxDailyRewards'] = 2,
-			['itemIds'] = {
-				723097, 4448, 23143, 23095, 71200, 23129, 23131, 4464, 33218, 812,
-				33217, 33219, 23130, 33220, 793, 71239, 4478, 800, 6020, 23142
-			},
-		},
-		{ -- Reagents
-			['eventType'] = VAR_EVENT_TYPE_TICKETS,
-			['rewardsBy'] = VAR_EVENT_TICKETS_LOOT,
-			['maxDailyRewards'] = 2,
-			['itemIds'] = {
-				77583, 30157, 30148, 30160, 77585, 150669, 139020, 30164, 30161,
-				150672, 150671, 150789, 150731, 30162, 30151, 77587, 30156, 30158,
-				30155, 30163, 77591, 30153, 77590, 30165, 139019, 77589, 77584,
-				0149, 77581, 150670, 30152, 30166, 30154, 0159
-			},
-		},
-		{ -- Vivec City Hall of Justice
-			['eventType'] = VAR_EVENT_TYPE_TICKETS,
-			['rewardsBy'] = VAR_EVENT_TICKETS_QUEST,
-			['maxDailyRewards'] = 2,
-			['quests'] = {
-				5906, 5904, 5866, 5865, 5918, 5916
-			--	[467] = {5906, 5904, 5866, 5865, 5918, 5916},
-			},
-		},
-	}
-
-	local counter = 0
-	local lastTime = 0
-	local numPerEvent = 5
-	local secsPerEvent = 30
-	getDailyResetTimeRemainingSeconds = function()
-		local frameTimeSeconds = GetFrameTimeSeconds()
-		if lastTime <= frameTimeSeconds then
-			lastTime = frameTimeSeconds + secsPerEvent
-			
-			if counter > (numPerEvent) then
-				counter = 0
-			else
-				counter = counter + 1
-			end
-		end
-		
-		local secondsRemaining = math.floor(lastTime - frameTimeSeconds)
-		return secondsRemaining > 0 and secondsRemaining or 0
-	end
-	
-	-- the event will become inactive after 5 minutes
-	checkForActiveEvent = function(self)
-		local isActive = counter <= numPerEvent
-		if isActive then
-		--	self:SetActiveEventType(VAR_EVENT_TYPE_UNKNOWN)
-		else
-			self:SetActiveEventType(VAR_EVENT_TYPE_NONE)
-		end
-	
-		return isActive
-	end
-	
-	reward_type_event_tickets = REWARD_TYPE_MONEY
-	
-	devTitles = {
-		'Woodwork Raw Material',
-		'Blacksmith Raw Material',
-		'Clothier Raw Material',
-		'Reagents',
-		'Vivec City Daily Quests',
-	}
-
-	devDescriptions = {
-		'This is a test event. Updates on acquiring Woodwork Raw Material.',
-		'This is a test event. Updates on acquiring Blacksmith Raw Material.',
-		'This is a test event. Updates on acquiring Clothier Raw Material.',
-		'This is a test event. Updates on acquiring Reagents.',
-		'This is a test event. Updates on acquiring Vivec City Daily Quests from Beleru Omoril in the Hall of Justice.',
-	}
-end
-
-do
---[[
-	local function mapEventByIndex(eventTable)
-		for _, eventInfo in ipairs(eventTable) do
-			if eventInfo.quests then
-				eventInfo.quests = processQuestNames(eventInfo.quests)
-			end
-			table.insert(EVENTS_TO_INDEX_MAP, eventInfo)
-			eventInfo.index = #EVENTS_TO_INDEX_MAP
-		end
-	end
-]]
-	
-	local function mapEventByIndex(eventTable)
-		for _, eventInfo in ipairs(eventTable) do
-			table.insert(EVENTS_TO_INDEX_MAP, eventInfo)
-			eventInfo.index = #EVENTS_TO_INDEX_MAP
-			
-			if eventInfo.quests then
-				mapIndexToQuestName(eventInfo.index, eventInfo.quests)
-			end
-			if eventInfo.items then
-				mapIndexToItemId(eventInfo.index, eventInfo.items)
-			end
-		end
-	end
-	
-	mapEventByIndex(EVENTS[VAR_EVENT_TYPE_TICKETS][VAR_EVENT_HAS_MAP_LOCATION])
-	mapEventByIndex(EVENTS[VAR_EVENT_TYPE_TICKETS][VAR_EVENT_NO_MAP_LOCATION])
-	mapEventByIndex(EVENTS[VAR_EVENT_TYPE_UNKNOWN])
-end
 
 ---------------------------------------------------------------------------
 -- Event class
@@ -538,7 +382,6 @@ function event:IsSameEvent(eventIndex)
 	return self.index == eventIndex
 end
 
-
 function event:GetTitle()
 	return self.title
 end
@@ -551,36 +394,49 @@ function event:GetInfo()
 	return self.title, self.description
 end
 
-
-function event:ReplaceMe()
-end
-
 ---------------------------------------------------------------------------
 -- lib
 ---------------------------------------------------------------------------
 local lib = _G[LIB_IDENTIFIER]
 
-lib.CheckForActiveEvent = checkForActiveEvent
-lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
+local svVersion = 1
+local svDefaults = {
+	eventData = {
+		eventIndex = VAR_EVENT_NONE,
+		eventType = VAR_EVENT_TYPE_NONE,
+	}
+}
 
--- used in debugging
---lib.Events = EVENTS
---lib.events_to_index_map = EVENTS_TO_INDEX_MAP
---lib.quest_to_index_map = QUEST_TO_INDEX_MAP
---lib.item_to_index_map = ITEM_TO_INDEX_MAP
+function lib:Initialize()
+	local function OnLoaded(_, name)
+		if name ~= LIB_IDENTIFIER then return end
+		EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_ADD_ON_LOADED)
+		
+		self.savedVars = ZO_SavedVars:NewAccountWide('LibSesonalEventManager_SV_Data', svVersion, nil, svDefaults, GetWorldName(), "$AllAccounts")
+		self.eventData = self.savedVars.eventData
+		
+		self:SetActiveEventType(VAR_EVENT_TYPE_NONE)
+		
+		self:RegisterStrings()
+		self:ChangeState(self:CheckForActiveEvent())
+	end
+	EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_ADD_ON_LOADED, OnLoaded)
+end
 
-function lib:UpdateStrings()
-	local function compileDevStrings(stringTable, destination)
-		for i, _string in ipairs(stringTable) do
-			table.insert(destination, _string)
-		end
+function lib:CheckForActiveEvent()
+	local isActive = isImpresarioVisible()
+	
+	if isActive then
+		self:SetActiveEventType(VAR_EVENT_TYPE_TICKETS)
+	else
+		self:SetActiveEventType(VAR_EVENT_TYPE_NONE)
 	end
 	
-	if dev then
-		compileDevStrings(devTitles, self.strings.titles)
-		compileDevStrings(devDescriptions, self.strings.descriptions)
-	end
-	
+	return isActive
+end
+
+function lib:RegisterStrings()
+	-- Dynamically generate string ids and register strings
 	local strings = {}
 
 	for i, _string in ipairs(self.strings.titles) do
@@ -633,7 +489,7 @@ function lib:RegisterEvents()
 		if #rewardDataList == 0 then return end
 		-- We only need to refresh the interaction if event tickets are present.
 		for i, data in ipairs(rewardDataList) do
-			if data.rewardType == reward_type_event_tickets then
+			if data.rewardType == REWARD_TYPE_EVENT_TICKETS then
 				if self:GetActiveEventType() == VAR_EVENT_TYPE_UNKNOWN then
 					local eventIndex, eventInfo = self:GetEventInfoByQuestName(GetJournalQuestName(questIndex))
 					if eventIndex then
@@ -818,7 +674,7 @@ function lib:GetEventIndexByFilter(eventType)
 end
 
 function lib:WouldTicketsExcedeMax(eventTickets)
-	return ZO_SharedInteraction:WouldCurrencyExceedMax(reward_type_event_tickets, eventTickets)
+	return ZO_SharedInteraction:WouldCurrencyExceedMax(REWARD_TYPE_EVENT_TICKETS, eventTickets)
 end
 
 function lib:RegisterUpdateCallback(callback)

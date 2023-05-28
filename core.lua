@@ -88,7 +88,6 @@ local defaultEventInfo = {
 	['rewardsBy'] 	= l_REWARDS_BY_NONE,
 }
 
-
 local questTypes = {
 	[QUEST_TYPE_NONE] = true,
 	[QUEST_TYPE_GROUP] = true,
@@ -304,7 +303,7 @@ function lib:OnUpdate()
 			self:Activate()
 		end
 		self:UpdateActiveEventIndex(self.eventData.eventIndex)
-	else
+	elseif self.active then
 		-- deactivate
 		self:Deactivate()
 	end
@@ -312,6 +311,7 @@ function lib:OnUpdate()
 	self:SetActive(isEventActive)
 	self:RegisterOnDailyReset()
 	CALLBACK_MANAGER:FireCallbacks('On_Seasonal_Event_Updated', isEventActive, self.currentEvent)
+	self.isUpdating = false
 end
 
 function lib:RegisterEvents()
@@ -321,10 +321,9 @@ function lib:RegisterEvents()
 		if #rewardDataList == 0 then return end
 		-- We only need to refresh the interaction if event tickets are present.
 		for i, data in ipairs(rewardDataList) do
-			d( data.rewardType == REWARD_TYPE_EVENT_TICKETS)
 			if data.rewardType == REWARD_TYPE_EVENT_TICKETS then
-				if self:GetActiveEventType() == l_EVENT_TYPE_UNKNOWN then
-					d( 'onQuestAdded')
+			
+				if self:GetActiveEventIndex() == l_EVENT_UNKNOWN then
 					local eventIndex = self:GetEventIndexByQuestName(questName)
 					if eventIndex then
 						self:UpdateActiveEventIndex(eventIndex)
@@ -338,7 +337,7 @@ function lib:RegisterEvents()
 	
     local function onInventorySingleSlotUpdate(eventId, bagId, slotId, isNewItem, itemIdsoundCategory, updateReason, stackCountChange)
 		if stackCountChange > 0 then
-			if self:GetActiveEventType() == l_EVENT_TYPE_UNKNOWN then
+			if self:GetActiveEventIndex() > l_EVENT_UNKNOWN then
 				local itemId = GetItemId(bagId, slotId)
 				local eventIndex = self:GetEventIndexByItemId(itemId)
 				if eventIndex then
@@ -358,7 +357,7 @@ function lib:RegisterOnDailyReset()
 	if secondsRemaining <= 0 then
 		zo_callLater(function()
 			self:RegisterOnDailyReset()
-		end, 1000)
+		end, 100)
 		return
 	end
 	
@@ -371,7 +370,7 @@ function lib:RegisterOnDailyReset()
 		end
 		self:OnUpdate()
 	end
-	EVENT_MANAGER:RegisterForUpdate(self.name .. '_OnUpdate', secondsRemaining * 1000, onUpdate)
+	EVENT_MANAGER:RegisterForUpdate(self.name .. '_OnUpdate', (secondsRemaining * 1000) + 1, onUpdate)
 end
 
 function lib:ResetToSavedEvent()
@@ -395,10 +394,8 @@ function lib:UnregisterEvents()
 end
 
 function lib:UpdateActiveEvent(eventIndex)
-	d( '----- UpdateActiveEvent', eventIndex)
 	local eventInfo = self:GetEventInfoByIndex(eventIndex)
 	
-	d( eventInfo)
 	if eventInfo ~= nil then
 		local newEvent = event_class:New(eventInfo)
 		self.currentEvent = newEvent
@@ -406,17 +403,14 @@ function lib:UpdateActiveEvent(eventIndex)
 	end
 	
 	-- Need to set up events if the event was not detected.
-	if self:GetActiveEventType() > l_EVENT_TYPE_UNKNOWN then
+	if self:GetActiveEventIndex() > l_EVENT_UNKNOWN then
 		self:UnregisterEvents()
 	else
 		self:RegisterEvents()
 	end
-	self.isUpdating = false
 end
 
 function lib:UpdateActiveEventIndex(eventIndex)
-	d( '----- UpdateActiveEventIndex', eventIndex)
-	
 	local function isNewEvent(eventIndex)
 	--	return self.eventData.eventIndex ~= eventIndex
 		return self:GetActiveEventIndex() ~= eventIndex
@@ -425,7 +419,6 @@ function lib:UpdateActiveEventIndex(eventIndex)
 	if eventIndex == l_EVENT_NONE then
 		eventIndex = self:GetEventIndexByVisibleLocation()
 	end
-	
 	if isNewEvent(eventIndex) then
 		self.eventData.eventIndex = eventIndex
 		self:UpdateActiveEvent(eventIndex)

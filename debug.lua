@@ -33,28 +33,53 @@ lib.eventsToIndexMap[l_EVENT_UNKNOWN] = {
 
 -- Event run time simulation.
 local lastTime = 0
-local daysPast = 0
 local secPerDay = 30
-local daysPerEvent = 5
-local function getDailyResetTimeRemainingSeconds()
-	local frameTimeSeconds = GetFrameTimeSeconds()
+local daysPerEvent = 2
+local daysPast = daysPerEvent
+
+local frameTimeSeconds
+
+local function updateTime(timeMS)
+	frameTimeSeconds = math.floor(timeMS / 1000)
 	if lastTime <= frameTimeSeconds then
 		lastTime = frameTimeSeconds + secPerDay
 		
-		if daysPast > daysPerEvent then
+		if daysPast == daysPerEvent then
 			daysPast = 0
 		else
 			daysPast = daysPast + 1
 		end
+	d( 'daysPast: ' .. daysPast)
 	end
+end
+updateTime(GetFrameTimeSeconds() * 1000)
+
+EVENT_MANAGER:RegisterForUpdate(LIB_IDENTIFIER .. '_ResetTimeUpdate', 1000, updateTime)
+	
+	
+local function getDailyResetTimeRemainingSeconds()
+	--[[
+	local frameTimeSeconds = GetFrameTimeSeconds()
+	if lastTime <= frameTimeSeconds then
+		lastTime = frameTimeSeconds + secPerDay
+		
+		if daysPast == daysPerEvent then
+			daysPast = 0
+		else
+			daysPast = daysPast + 1
+		end
+	d( 'daysPast: ' .. daysPast)
+	end
+	]]
 	
 	local secondsRemaining = math.floor(lastTime - frameTimeSeconds)
 	return secondsRemaining > 0 and secondsRemaining or 0
 end
+getDailyResetTimeRemainingSeconds()
 lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
 
 local function checkForActiveEvent(self)
-	local isActive = daysPast <= daysPerEvent
+	local isActive = daysPast < daysPerEvent
 	
 	if isActive then
 		self:SetActiveEventType(l_EVENT_TYPE_TICKETS)
@@ -73,24 +98,24 @@ REWARD_TYPE_EVENT_TICKETS = REWARD_TYPE_MONEY
 ---------------------------------------------------------------------------
 local events = {
 	{ -- Woodwork Raw Material
-		['eventType'] = VAR_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = VAR_EVENT_TYPE_TARGET,
+		['eventType'] = l_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = l_EVENT_TYPE_TARGET,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			4439, 23117, 818, 23118, 23137, 802, 23138, 521, 71199, 23119
 		},
 	},
 	{ -- Blacksmith Raw Material
-		['eventType'] = VAR_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = VAR_EVENT_TICKETS_LOOT,
+		['eventType'] = l_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = l_EVENT_TICKETS_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			4482, 23104, 23105, 23133, 5820, 808, 23103, 23134, 71198, 23135
 		},
 	},
 	{ -- Clothier Raw Material
-		['eventType'] = VAR_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = VAR_EVENT_TICKETS_LOOT,
+		['eventType'] = l_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = l_EVENT_TICKETS_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			723097, 4448, 23143, 23095, 71200, 23129, 23131, 4464, 33218, 812,
@@ -98,8 +123,8 @@ local events = {
 		},
 	},
 	{ -- Reagents
-		['eventType'] = VAR_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = VAR_EVENT_TICKETS_LOOT,
+		['eventType'] = l_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = l_EVENT_TICKETS_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			77583, 30157, 30148, 30160, 77585, 150669, 139020, 30164, 30161,
@@ -109,8 +134,8 @@ local events = {
 		},
 	},
 	{ -- Vivec City Hall of Justice
-		['eventType'] = VAR_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = VAR_EVENT_TICKETS_QUEST,
+		['eventType'] = l_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = l_EVENT_TICKETS_QUEST,
 		['maxDailyRewards'] = 2,
 		['quests'] = {
 			5906, 5904, 5866, 5865, 5918, 5916

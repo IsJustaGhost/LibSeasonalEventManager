@@ -8,6 +8,7 @@
 ## SavedVariables: LibSesonalEventManager_SV_Data
 
 constants.lua
+eventClass.lua
 events.lua
 i18n\en.lua
 i18n\$(language).lua

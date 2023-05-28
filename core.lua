@@ -118,6 +118,14 @@ local function isMapLocationVisible(zoneIndex, subzoneIndex, locIndex)
 		end
 	end
 
+		d( '')
+		d( GetMapLocationTooltipHeader(locIndex))
+		local numTooltipLines = GetNumMapLocationTooltipLines(locIndex)
+		for lineIndex = 1, numTooltipLines do
+        --    local icon, name, groupingId, categoryName = GetMapLocationTooltipLineInfo(locationIndex, lineIndex)
+			d( zo_strformat('Line: <<1>>, Name: <<2>>, groupingId: <<3>>, categoryName: <<4>>',lineIndex, select(2, GetMapLocationTooltipLineInfo(locIndex, lineIndex) ) ) )
+		end
+	
 	local isVisible = IsMapLocationVisible(locIndex)
 	
 	-- Lets change the map back to the previously selected map or player's position.
@@ -250,71 +258,21 @@ function lib:Initialize()
 	EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_ADD_ON_LOADED, OnLoaded)
 end
 
-function lib:CheckForActiveEvent()
-	local isActive = isImpresarioVisible()
-	
-	if isActive then
-		self:SetActiveEventType(l_EVENT_TYPE_TICKETS)
-	else
-		self:SetActiveEventType(l_EVENT_TYPE_NONE)
-	end
-	
-	return isActive
-end
-
-function lib:Activate()
-	self:ResetToSavedEvent()
-	
-	if self:GetActiveEventIndex() == l_EVENT_UNKNOWN then
-        for questIndex = 1, GetNumJournalQuests() do
-			local questName, _, _, _, _, _, _, _, _, questType = GetJournalQuestInfo(questIndex)
-			if questTypes[questType] then
-				local eventIndex = self:GetEventIndexByQuestName(questName)
-				if eventIndex then
-					self:UpdateActiveEventIndex(eventIndex)
-					return
-				end
-			end
-        end
-	end
-end
-
-function lib:Deactivate()
-	self:SetActiveEventType(l_EVENT_TYPE_NONE)
-	self.eventData.eventIndex = l_EVENT_NONE
-	
-	self.currentEvent = defaultEvent
-	self:UnregisterEvents()
-end
-
-function lib.GetDailyResetTimeRemainingSeconds()
-	return GetTimeUntilNextDailyLoginRewardClaimS()
-end
-
-function lib:OnUpdate()
-	if self.isUpdating then return end
-	self.isUpdating = true
-	
-	local isEventActive = self:CheckForActiveEvent()
-	
-	if isEventActive then
-		if not self.active then
-			-- activate
-			self:Activate()
-		end
-		self:UpdateActiveEventIndex(self.eventData.eventIndex)
-	elseif self.active then
-		-- deactivate
-		self:Deactivate()
-	end
-	
-	self:SetActive(isEventActive)
-	self:RegisterOnDailyReset()
-	CALLBACK_MANAGER:FireCallbacks('On_Seasonal_Event_Updated', isEventActive, self.currentEvent)
-	self.isUpdating = false
-end
-
+---------------------------------------------------------------------------
+-- 
+---------------------------------------------------------------------------
 function lib:RegisterEvents()
+	local function onEventAnnouncementsUpdated(event)
+		d( '--- ' .. event .. ' ---')
+		-- refresh
+	end
+		
+    EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_MARKET_ANNOUNCEMENT_UPDATED, function() onEventAnnouncementsUpdated('EVENT_MARKET_ANNOUNCEMENT_UPDATED') end)
+    EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_EVENT_ANNOUNCEMENTS_UPDATED, function() onEventAnnouncementsUpdated('EVENT_EVENT_ANNOUNCEMENTS_UPDATED') end)
+    EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_EVENT_ANNOUNCEMENTS_RECEIVED, function() onEventAnnouncementsUpdated('EVENT_EVENT_ANNOUNCEMENTS_RECEIVED') end)
+end
+
+function lib:RegisterLookupEvents()
 	local function onQuestAdded(eventId, questIndex, questName)
 		local rewardDataList = SYSTEMS:GetObject(ZO_INTERACTION_SYSTEM_NAME):GetRewardData(questIndex)
 		
@@ -350,6 +308,22 @@ function lib:RegisterEvents()
 	EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, onInventorySingleSlotUpdate)
 end
 
+function lib:UnregisterEvents()
+	EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_MARKET_ANNOUNCEMENT_UPDATED)
+	EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_EVENT_ANNOUNCEMENTS_UPDATED)
+	EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_EVENT_ANNOUNCEMENTS_RECEIVED)
+	self:UnregisterLookupEvents()
+end
+
+function lib:UnregisterLookupEvents()
+	EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_QUEST_ADDED)
+	EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
+end
+
+---------------------------------------------------------------------------
+-- 
+---------------------------------------------------------------------------
+
 function lib:RegisterOnDailyReset()
 	EVENT_MANAGER:UnregisterForUpdate(self.name .. '_OnUpdate')
 	
@@ -373,6 +347,76 @@ function lib:RegisterOnDailyReset()
 	EVENT_MANAGER:RegisterForUpdate(self.name .. '_OnUpdate', (secondsRemaining * 1000) + 1, onUpdate)
 end
 
+---------------------------------------------------------------------------
+-- 
+---------------------------------------------------------------------------
+function lib:CheckForActiveEvent()
+	local isActive = isImpresarioVisible()
+	
+	if isActive then
+		self:SetActiveEventType(l_EVENT_TYPE_TICKETS)
+	else
+		self:SetActiveEventType(l_EVENT_TYPE_NONE)
+	end
+	
+	return isActive
+end
+
+function lib:Activate()
+	self:ResetToSavedEvent()
+	
+	if self:GetActiveEventIndex() == l_EVENT_UNKNOWN then
+        for questIndex = 1, GetNumJournalQuests() do
+			local questName, _, _, _, _, _, _, _, _, questType = GetJournalQuestInfo(questIndex)
+			if questTypes[questType] then
+				local eventIndex = self:GetEventIndexByQuestName(questName)
+				if eventIndex then
+					self:UpdateActiveEventIndex(eventIndex)
+					return
+				end
+			end
+        end
+	end
+end
+
+function lib:Deactivate()
+	self:SetActiveEventType(l_EVENT_TYPE_NONE)
+	self.eventData.eventIndex = l_EVENT_NONE
+	
+	self.currentEvent = self.defaultEvent
+	self:UnregisterEvents()
+end
+
+function lib:SetActive(isEventActive)
+	self.active = isEventActive
+end
+
+function lib:OnUpdate()
+	if self.isUpdating then return end
+	self.isUpdating = true
+	
+	local isEventActive = self:CheckForActiveEvent()
+	
+	if isEventActive then
+		if not self.active then
+			-- activate
+			self:Activate()
+		end
+		self:UpdateActiveEventIndex(self.eventData.eventIndex)
+	elseif self.active then
+		-- deactivate
+		self:Deactivate()
+	end
+	
+	self:SetActive(isEventActive)
+	self:RegisterOnDailyReset()
+	CALLBACK_MANAGER:FireCallbacks('On_Seasonal_Event_Updated', isEventActive, self.currentEvent)
+	self.isUpdating = false
+end
+
+---------------------------------------------------------------------------
+-- 
+---------------------------------------------------------------------------
 function lib:ResetToSavedEvent()
 	local eventIndex = self.eventData.eventIndex
 	if eventIndex then
@@ -380,24 +424,15 @@ function lib:ResetToSavedEvent()
 	end
 end
 
-function lib:SetActive(isEventActive)
-	self.active = isEventActive
-end
-
 function lib:SetActiveEventType(eventType)
 	self.eventData.eventType = eventType
-end
-
-function lib:UnregisterEvents()
-	EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_QUEST_ADDED)
-	EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
 end
 
 function lib:UpdateActiveEvent(eventIndex)
 	local eventInfo = self:GetEventInfoByIndex(eventIndex)
 	
 	if eventInfo ~= nil then
-		local newEvent = event_class:New(eventInfo)
+		local newEvent = self.event_class:New(eventInfo)
 		self.currentEvent = newEvent
 		self:SetActiveEventType(eventInfo.eventType)
 	end
@@ -529,6 +564,10 @@ end
 ---------------------------------------------------------------------------
 -- API
 ---------------------------------------------------------------------------
+function lib.GetDailyResetTimeRemainingSeconds()
+	return GetTimeUntilNextDailyLoginRewardClaimS()
+end
+
 function lib:IsEventActive()
 	return self.eventData.eventType ~= l_EVENT_TYPE_NONE
 end
@@ -596,6 +635,10 @@ function lib:GetEventMaxDailyRewards()
 		return self.currentEvent:GetMaxDailyRewards()
 	end
 	return l_EVENT_NONE
+end
+
+function lib:IsImpresarioVisible()
+	return self.impresario or false
 end
 
 ---------------------------------------------------------------------------

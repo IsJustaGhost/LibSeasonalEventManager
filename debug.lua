@@ -1,5 +1,5 @@
 
-local ignore = false
+local ignore = true
 
 if ignore then return end
 
@@ -58,20 +58,6 @@ EVENT_MANAGER:RegisterForUpdate(LIB_IDENTIFIER .. '_ResetTimeUpdate', 1000, upda
 	
 	
 local function getDailyResetTimeRemainingSeconds()
-	--[[
-	local frameTimeSeconds = GetFrameTimeSeconds()
-	if lastTime <= frameTimeSeconds then
-		lastTime = frameTimeSeconds + secPerDay
-		
-		if daysPast == daysPerEvent then
-			daysPast = 0
-		else
-			daysPast = daysPast + 1
-		end
-	d( 'daysPast: ' .. daysPast)
-	end
-	]]
-	
 	local secondsRemaining = math.floor(lastTime - frameTimeSeconds)
 	return secondsRemaining > 0 and secondsRemaining or 0
 end

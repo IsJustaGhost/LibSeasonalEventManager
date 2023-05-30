@@ -1,7 +1,7 @@
 ## Title: LibSeasonalEventManager
 ## Description: .
 ## Author: IsJustGhost
-## APIVersion: 101035 101036
+## APIVersion: 101037 101038
 ## Version: 0.1
 ## AddOnVersion: 000001
 ## IsLibrary: true

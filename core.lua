@@ -71,6 +71,7 @@ local l_EVENT_UNKNOWN		= lib.constants.currentEventUnknown
 local l_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
 local l_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
 local l_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
+local l_EVENT_TYPE_BG		= lib.constants.eventTypeBG
 
 local l_REWARDS_BY_NONE		= lib.constants.rewardsByNone
 local l_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
@@ -118,14 +119,6 @@ local function isMapLocationVisible(zoneIndex, subzoneIndex, locIndex)
 		end
 	end
 
-		d( '')
-		d( GetMapLocationTooltipHeader(locIndex))
-		local numTooltipLines = GetNumMapLocationTooltipLines(locIndex)
-		for lineIndex = 1, numTooltipLines do
-        --    local icon, name, groupingId, categoryName = GetMapLocationTooltipLineInfo(locationIndex, lineIndex)
-			d( zo_strformat('Line: <<1>>, Name: <<2>>, groupingId: <<3>>, categoryName: <<4>>',lineIndex, select(2, GetMapLocationTooltipLineInfo(locIndex, lineIndex) ) ) )
-		end
-	
 	local isVisible = IsMapLocationVisible(locIndex)
 	
 	-- Lets change the map back to the previously selected map or player's position.
@@ -137,15 +130,6 @@ end
 
 local function doesEventHaveVisiblePin(locationInfo)
 	return isMapLocationVisible(locationInfo.zoneIndex, locationInfo.subzoneIndex, locationInfo.locationIndex)
-end
-
-local function isImpresarioVisible()
-	local zoneIndex = 2
-	local subzoneIndex = 68
-	local locIndex = 24
-	
-	local isTicketEvent = isMapLocationVisible(zoneIndex, subzoneIndex, locIndex)
-	return isTicketEvent, l_EVENT_TYPE_TICKETS
 end
 
 ---------------------------------------------------------------------------
@@ -182,51 +166,6 @@ local function processQuestNames(quests)
 end
 
 ]]
-
----------------------------------------------------------------------------
--- Event class
----------------------------------------------------------------------------
-local event_class = ZO_InitializingObject:Subclass()
-
-function event_class:Initialize(eventInfo)
-	zo_mixin(self, eventInfo)
-	
-	if self.index then
-		self.title = zo_strformat('<<1>> <<2>>', GetString('SI_EVENTS_MANAGER_TITLE', self.index), GetString(SI_NOTIFICATIONTYPE19))
-		self.description = GetString('SI_EVENTS_MANAGER_DESCRIPTION', self.index)
-	end
-end
-
-function event_class:GetIndex()
-	return self.index
-end
-function event_class:GetType()
-	return self.eventType
-end
-function event_class:GetRewardsBy()
-	return self.rewardsBy
-end
-function event_class:GetMaxDailyRewards()
-	return self.maxDailyRewards or 0
-end
-
-function event_class:IsSameEvent(eventIndex)
-	return self.index == eventIndex
-end
-
-function event_class:GetTitle()
-	return self.title
-end
-
-function event_class:GetDescription()
-	return self.description
-end
-
-function event_class:GetInfo()
-	return self.title, self.description
-end
-
-local defaultEvent = event_class:New(defaultEventInfo)
 
 ---------------------------------------------------------------------------
 -- lib
@@ -350,16 +289,31 @@ end
 ---------------------------------------------------------------------------
 -- 
 ---------------------------------------------------------------------------
-function lib:CheckForActiveEvent()
-	local isActive = isImpresarioVisible()
+function lib:IsImpresarioVisible()
+	local zoneIndex = 2
+	local subzoneIndex = 68
+	local locIndex = 24
 	
-	if isActive then
-		self:SetActiveEventType(l_EVENT_TYPE_TICKETS)
-	else
-		self:SetActiveEventType(l_EVENT_TYPE_NONE)
+	local isTicketEvent = isMapLocationVisible(zoneIndex, subzoneIndex, locIndex)
+	return isTicketEvent, l_EVENT_TYPE_TICKETS
+end
+
+function lib:CheckForAndGetActiveEventType()
+	if self:IsImpresarioVisible() then
+		return l_EVENT_TYPE_TICKETS
+	elseif BATTLEGROUND_FINDER_KEYBOARD.filterComboBox:GetNumItems() > 2 then
+		return l_EVENT_TYPE_BG
 	end
 	
-	return isActive
+	return l_EVENT_TYPE_NONE
+end
+
+function lib:CheckForActiveEvent()
+	local activeType = self:CheckForAndGetActiveEventType()
+	
+	self:SetActiveEventType(activeType)
+	
+	return activeType ~= l_EVENT_TYPE_NONE
 end
 
 function lib:Activate()
@@ -437,11 +391,11 @@ function lib:UpdateActiveEvent(eventIndex)
 		self:SetActiveEventType(eventInfo.eventType)
 	end
 	
-	-- Need to set up events if the event was not detected.
+	-- Need to set up event if the event was not detected.
 	if self:GetActiveEventIndex() > l_EVENT_UNKNOWN then
-		self:UnregisterEvents()
+		self:UnregisterLookupEvents()
 	else
-		self:RegisterEvents()
+		self:RegisterLookupEvents()
 	end
 end
 
@@ -601,7 +555,7 @@ function lib:RegisterUpdateCallback(callback)
 	if self.eventData then
 		zo_callLater(function()
 			callback(self.active, self:GetCurrentEvent())
-		end, 1000)
+		end, 500)
 	end
 	CALLBACK_MANAGER:RegisterCallback('On_Seasonal_Event_Updated', callback)
 end

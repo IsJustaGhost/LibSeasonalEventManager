@@ -1,5 +1,5 @@
 
-local ignore = false
+local ignore = true
 
 if ignore then return end
 
@@ -16,6 +16,7 @@ local l_EVENT_UNKNOWN		= lib.constants.currentEventUnknown
 local l_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
 local l_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
 local l_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
+local l_EVENT_TYPE_BG		= lib.constants.eventTypeBG
 
 local l_REWARDS_BY_NONE		= lib.constants.rewardsByNone
 local l_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
@@ -35,7 +36,7 @@ lib.eventsToIndexMap[l_EVENT_UNKNOWN] = {
 local lastTime = 0
 local secPerDay = 30
 local daysPerEvent = 2
-local daysPast = daysPerEvent
+local currentDay = daysPerEvent
 
 local frameTimeSeconds
 
@@ -44,12 +45,17 @@ local function updateTime(timeMS)
 	if lastTime <= frameTimeSeconds then
 		lastTime = frameTimeSeconds + secPerDay
 		
-		if daysPast == daysPerEvent then
-			daysPast = 0
+		if currentDay >= daysPerEvent then
+			currentDay = 0
 		else
-			daysPast = daysPast + 1
+			currentDay = currentDay + 1
 		end
-	d( 'daysPast: ' .. daysPast)
+	
+		if currentDay >= daysPerEvent then
+			d( '-- No Event Active --')
+		else
+			d( '-- Event Day: ' .. (currentDay +1) .. ' --')
+		end
 	end
 end
 updateTime(GetFrameTimeSeconds() * 1000)
@@ -64,17 +70,15 @@ end
 getDailyResetTimeRemainingSeconds()
 lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
 
-local function checkForActiveEvent(self)
-	local isActive = daysPast < daysPerEvent
-	
-	if isActive then
-		self:SetActiveEventType(l_EVENT_TYPE_TICKETS)
-	else
-		self:SetActiveEventType(l_EVENT_TYPE_NONE)
+function lib:CheckForAndGetActiveEventType()
+	local activeType = l_EVENT_TYPE_NONE
+	if currentDay < daysPerEvent then
+	-- Set this to the event type you want to test.
+		activeType = l_EVENT_TYPE_TICKETS
 	end
-	return isActive
+
+	return activeType
 end
-lib.CheckForActiveEvent = checkForActiveEvent
 
 -- Changing this so gold will trigger checks
 REWARD_TYPE_EVENT_TICKETS = REWARD_TYPE_MONEY

@@ -302,6 +302,7 @@ function lib:CheckForAndGetActiveEventType()
 	if self:IsImpresarioVisible() then
 		return l_EVENT_TYPE_TICKETS
 	elseif BATTLEGROUND_FINDER_KEYBOARD.filterComboBox:GetNumItems() > 2 then
+		-- Will not work. Only is filled after the battlegrounds fragment shows.
 		return l_EVENT_TYPE_BG
 	end
 	

@@ -1,7 +1,7 @@
 # LibSeasonalEventManager
 The purpos of this library is to watch for active seasonal events and, match active event with the proper info.
 
-Currently, it only knows if an event is running while the Iprasario is visiable on a map.
+Currently, it only knows if an event is running while the Impresario is visiable on a map.
 It can only automatically detect 4 events. The Annivarsary Jubilee, The Witch's Fesival, the Jester's Festival, and Whitestrake's Mayhem Celebration.
 With either of those 4 events, it will update the data on load or on daily rest.
 For other events, they will be identified on quest pickup, or loot pickup.

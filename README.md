@@ -6,7 +6,7 @@ It can only automatically detect 4 events. The Annivarsary Jubilee, The Witch's 
 With either of those 4 events, it will update the data on load or on daily rest.
 For other events, they will be identified on quest pickup, or loot pickup.
 
-Unless the Iprasario becomes hidden or, an event change was detected on daily rest, it will keep the current event data between resets and loads.
+Unless the Impresario becomes hidden or, an event change was detected on daily rest, it will keep the current event data between resets and loads.
 
 Other information for each event can be added. 
 The running event is an oject, and any needed information about the event can be acquired by the object passed through the registered callback.

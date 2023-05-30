@@ -14,6 +14,7 @@ local l_EVENT_UNKNOWN		= lib.constants.currentEventUnknown
 local l_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
 local l_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
 local l_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
+local l_EVENT_TYPE_BG		= lib.constants.eventTypeBG
 
 local l_REWARDS_BY_NONE		= lib.constants.rewardsByNone
 local l_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
@@ -173,6 +174,47 @@ local events = {
 			6512, 6527, 6519, 6517, 6509, 6526, 6518, 6494, 6524, 6493, 6495, 6520, 6523,
 			6559, 6585, 6556, 6582, 6583, 6584, 6581, 6573, 6557, 6569, 6571, 6567, 6572,
 			6603, 6604, 6600, 6605, 6602, 6606, 6601, 6610, 6561
+		},
+	},
+	-- Battlegrounds weekends
+	{ -- Chaos Ball PVP Weekend
+		['eventType'] = l_EVENT_TYPE_BG,
+		['rewardsBy'] = l_REWARDS_BY_NONE,
+		['maxDailyRewards'] = 0,
+		['battlegrounds'] = {
+			82, 88, 92, 97,
+		},
+	},
+	{ -- Crazy King PVP Weekend
+		['eventType'] = l_EVENT_TYPE_BG,
+		['rewardsBy'] = l_REWARDS_BY_NONE,
+		['maxDailyRewards'] = 0,
+		['battlegrounds'] = {
+			83, 89, 93, 98,
+		},
+	},
+	{ -- Relic PVP Weekend
+		['eventType'] = l_EVENT_TYPE_BG,
+		['rewardsBy'] = l_REWARDS_BY_NONE,
+		['maxDailyRewards'] = 0,
+		['battlegrounds'] = {
+			84, 87, 94, 99,
+		},
+	},
+	{ -- Deathmatch PVP Weekend
+		['eventType'] = l_EVENT_TYPE_BG,
+		['rewardsBy'] = l_REWARDS_BY_NONE,
+		['maxDailyRewards'] = 0,
+		['battlegrounds'] = {
+			85, 90, 95, 100,
+		},
+	},
+	{ -- Domination PVP Weekend
+		['eventType'] = l_EVENT_TYPE_BG,
+		['rewardsBy'] = l_REWARDS_BY_NONE,
+		['maxDailyRewards'] = 0,
+		['battlegrounds'] = {
+			86, 91, 96, 101,
 		},
 	},
 }

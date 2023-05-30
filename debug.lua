@@ -70,6 +70,8 @@ end
 getDailyResetTimeRemainingSeconds()
 lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
 
+
+--[[
 function lib:CheckForAndGetActiveEventType()
 	local activeType = l_EVENT_TYPE_NONE
 	if currentDay < daysPerEvent then
@@ -79,10 +81,62 @@ function lib:CheckForAndGetActiveEventType()
 
 	return activeType
 end
+]]
 
 -- Changing this so gold will trigger checks
 REWARD_TYPE_EVENT_TICKETS = REWARD_TYPE_MONEY
 
+
+---------------------------------------------------------------------------
+-- Battleground Weekends
+---------------------------------------------------------------------------
+local standardBatlegrounds = {
+	[1] = true,		-- Group Random Battleground
+	[2] = true,		-- Group Random Battleground
+	[67] = true,	-- Solo Random Battleground
+	[68] = true,	-- Solo Random Battleground
+}
+
+local bgId = 82
+function lib:GetActiveBattlegound()
+	for _, activityType in pairs({LFG_ACTIVITY_BATTLE_GROUND_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_NON_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_LOW_LEVEL}) do
+		for id, location in pairs(ZO_ACTIVITY_FINDER_ROOT_MANAGER.locationSetsLookupData[activityType]) do
+			if not standardBatlegrounds[id] then
+				if id == bgId and currentDay < daysPerEvent then
+					return id
+				end
+			end
+		end
+	end
+end
+
+--[[ Battleground 
+	[1] = true, -- Group Random Battleground
+	[2] = true, -- Group Random Battleground
+	[67] = true, -- Solo Random Battleground
+	[68] = true, -- Solo Random Battleground
+	--PVP Weekend
+	[82] = true, -- Group Chaos Ball PVP Weekend
+	[83] = true, -- Group Crazy King PVP Weekend
+	[84] = true, -- Group Relic PVP Weekend
+	[85] = true, -- Group Deathmatch PVP Weekend
+	[86] = true, -- Group Domination PVP Weekend
+	[87] = true, -- Solo Relic PVP Weekend
+	[88] = true, -- Solo Chaos Ball PVP Weekend
+	[89] = true, -- Solo Crazy King PVP Weekend
+	[90] = true, -- Solo Deathmatch PVP Weekend
+	[91] = true, -- Solo Domination PVP Weekend
+	[92] = true, -- Group Chaos Ball PVP Weekend
+	[93] = true, -- Group Crazy King PVP Weekend
+	[94] = true, -- Group Relic PVP Weekend
+	[95] = true, -- Group Deathmatch PVP Weekend
+	[96] = true, -- Group Domination PVP Weekend
+	[97] = true, -- Solo Chaos Ball PVP Weekend
+	[98] = true, -- Solo Crazy King PVP Weekend
+	[99] = true, -- Solo Relic PVP Weekend
+	[100] = true, -- Solo Deathmatch PVP Weekend
+	[101] = true, -- Solo Domination PVP Weekend
+]]
 ---------------------------------------------------------------------------
 -- Debug events
 ---------------------------------------------------------------------------

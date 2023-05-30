@@ -28,6 +28,7 @@ lib.locationToIndexMap = {}
 lib.indexToQuestNameMap = {}
 lib.indexToItemIdMap = {}
 lib.indexToTargetNameMap = {}
+lib.indexToBattlegroundIdMap = {}
 
 lib.constants = {}
 

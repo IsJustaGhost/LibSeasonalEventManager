@@ -95,6 +95,14 @@ local questTypes = {
 	[QUEST_TYPE_HOLIDAY_EVENT] = true,
 }
 
+
+local standardBatlegrounds = {
+	[1] = true,		-- Group Random Battleground
+	[2] = true,		-- Group Random Battleground
+	[67] = true,	-- Solo Random Battleground
+	[68] = true,	-- Solo Random Battleground
+}
+
 ---------------------------------------------------------------------------
 -- 
 ---------------------------------------------------------------------------
@@ -205,7 +213,7 @@ function lib:RegisterEvents()
 		d( '--- ' .. event .. ' ---')
 		-- refresh
 	end
-		
+	-- I want to see if these will be usefull.
     EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_MARKET_ANNOUNCEMENT_UPDATED, function() onEventAnnouncementsUpdated('EVENT_MARKET_ANNOUNCEMENT_UPDATED') end)
     EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_EVENT_ANNOUNCEMENTS_UPDATED, function() onEventAnnouncementsUpdated('EVENT_EVENT_ANNOUNCEMENTS_UPDATED') end)
     EVENT_MANAGER:RegisterForEvent(LIB_IDENTIFIER, EVENT_EVENT_ANNOUNCEMENTS_RECEIVED, function() onEventAnnouncementsUpdated('EVENT_EVENT_ANNOUNCEMENTS_RECEIVED') end)
@@ -289,7 +297,7 @@ end
 ---------------------------------------------------------------------------
 -- 
 ---------------------------------------------------------------------------
-function lib:IsImpresarioVisible()
+function lib:GetImresarioFromMap()
 	local zoneIndex = 2
 	local subzoneIndex = 68
 	local locIndex = 24
@@ -298,10 +306,22 @@ function lib:IsImpresarioVisible()
 	return isTicketEvent, l_EVENT_TYPE_TICKETS
 end
 
+function lib:GetActiveBattlegound()
+	for _, activityType in pairs({LFG_ACTIVITY_BATTLE_GROUND_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_NON_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_LOW_LEVEL}) do
+		for id, location in pairs(ZO_ACTIVITY_FINDER_ROOT_MANAGER.locationSetsLookupData[activityType]) do
+			if not standardBatlegrounds[id] then
+				if location.isActive then
+					return id
+				end
+			end
+		end
+	end
+end
+
 function lib:CheckForAndGetActiveEventType()
-	if self:IsImpresarioVisible() then
+	if self:GetImresarioFromMap() then
 		return l_EVENT_TYPE_TICKETS
-	elseif BATTLEGROUND_FINDER_KEYBOARD.filterComboBox:GetNumItems() > 2 then
+	elseif self:GetActiveBattlegound() ~= nil then
 		return l_EVENT_TYPE_BG
 	end
 	
@@ -312,6 +332,10 @@ function lib:CheckForActiveEvent()
 	local activeType = self:CheckForAndGetActiveEventType()
 	
 	self:SetActiveEventType(activeType)
+	if activeType == l_EVENT_TYPE_BG then
+		local bgId = self:GetActiveBattlegound()
+		self.eventData.eventIndex = self:GetEventIndexByBattleGroundId(bgId)
+	end
 	
 	return activeType ~= l_EVENT_TYPE_NONE
 end
@@ -320,16 +344,19 @@ function lib:Activate()
 	self:ResetToSavedEvent()
 	
 	if self:GetActiveEventIndex() == l_EVENT_UNKNOWN then
-        for questIndex = 1, GetNumJournalQuests() do
-			local questName, _, _, _, _, _, _, _, _, questType = GetJournalQuestInfo(questIndex)
-			if questTypes[questType] then
-				local eventIndex = self:GetEventIndexByQuestName(questName)
-				if eventIndex then
-					self:UpdateActiveEventIndex(eventIndex)
-					return
+		if self.eventData.eventType == l_EVENT_TYPE_BG then
+		else
+			for questIndex = 1, GetNumJournalQuests() do
+				local questName, _, _, _, _, _, _, _, _, questType = GetJournalQuestInfo(questIndex)
+				if questTypes[questType] then
+					local eventIndex = self:GetEventIndexByQuestName(questName)
+					if eventIndex then
+						self:UpdateActiveEventIndex(eventIndex)
+						return
+					end
 				end
 			end
-        end
+		end
 	end
 end
 
@@ -429,6 +456,10 @@ function lib:GetEventIndexByItemId(itemId)
 	return self.indexToItemIdMap[itemId]
 end
 
+function lib:GetEventIndexByBattleGroundId(bgId)
+	return self.indexToBattlegroundIdMap[bgId]
+end
+
 function lib:GetEventIndexByVisibleLocation()
 	for eventIndex, location in pairs(self.locationToIndexMap) do
 		if doesEventHaveVisiblePin(location) then
@@ -445,8 +476,8 @@ end
 -- Mapping the event data allow for simplifying lookup.
 do
 	local function mapIndexByKey(self, key, eventIndex, source, indexFunc)
-		for zoneId, index in pairs(source) do
-			self[key][indexFunc(index)] = eventIndex
+		for k, v in pairs(source) do
+			self[key][indexFunc(v)] = eventIndex
 		end
 	end
 	
@@ -458,6 +489,9 @@ do
 	end
 	local function mapIndexToTargetName(self, eventIndex, targets)
 		mapIndexByKey(self, 'indexToTargetNameMap', eventIndex, targets, function(target) return getString(target) end)
+	end
+	local function mapIndexToBattlegroundId(self, eventIndex, battlegrounds)
+		mapIndexByKey(self, 'indexToBattlegroundIdMap', eventIndex, battlegrounds, function(bgId) return bgId end)
 	end
 
 	local function mapLocationToIndex(self, eventIndex, location)
@@ -482,6 +516,9 @@ do
 			end
 			if eventInfo.location then
 				mapLocationToIndex(self, eventInfo.index, eventInfo.location)
+			end
+			if eventInfo.battlegrounds then
+				mapIndexToBattlegroundId(self, eventInfo.index, eventInfo.battlegrounds)
 			end
 		end
 
@@ -601,12 +638,29 @@ end
 IJA_Seasonal_Event_Manager = lib:New()
 
 --[[
+
+--	/script d( IJA_Seasonal_Event_Manager:GetActiveBattlegound())
+function lib:GetActiveBattlegound()
+	local activeBattleground = 0
+	
+	for _, activityType in pairs({LFG_ACTIVITY_BATTLE_GROUND_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_NON_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_LOW_LEVEL}) do
+		for i, location in pairs(ZO_ACTIVITY_FINDER_ROOT_MANAGER.locationSetsLookupData[activityType]) do
+			if location.isActive then
+				--activeBattleground = 
+			end
+			d( zo_strformat('Id: <<1>>, Name: <<2>>', location.id, location.description))
+		end
+	end
+end
 /script IJA_Seasonal_Event_Manager.savedVars = {}
 
 /script d( IJA_Seasonal_Event_Manager:GetEventTitle())
 /script d( IJA_Seasonal_Event_Manager:GetEventDescription())
 /script d( IJA_Seasonal_Event_Manager:GetEventInfo())
 /script d( IJA_Seasonal_Event_Manager:GetEventMaxDailyRewards())
+
+
+
 
         for questIndex = 1, GetNumJournalQuests() do
 			local questName, _, _, _, _, _, _, _, _, questType = GetJournalQuestInfo(questIndex)

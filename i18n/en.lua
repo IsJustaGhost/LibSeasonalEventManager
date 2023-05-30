@@ -1,6 +1,7 @@
 ------------------------------------------------
 -- English localization for LibSeasonalEventManager
 ------------------------------------------------
+-- All strings must be in order they are listed in Events and, must contain the same number of entries.
 
 local lib = _G["LibSeasonalEventManager"]
 lib.strings = {}
@@ -17,17 +18,25 @@ lib.strings.titles = {
 	'Zeal of Zenithar',
 	'Dark Heart of Skyrim Celebration',
 
---	'Explorer's Celebration', -- No Impresario 
+--	'Explorer's Celebration',
 
+	'Battlegrounds: Chaos Ball PVP Weekend',
+	'Battlegrounds: Crazy King PVP Weekend',
+	'Battlegrounds: Capture The Relic PVP Weekend',
+	'Battlegrounds: Deathmatch PVP Weekend',
+	'Battlegrounds: Domination PVP Weekend',
+	
+	
 --	'Deathmatch Battleground Weekend',
 --	'Crazy King Battleground Weekend',
 --	'Chaosball Battleground Weekend',
 --	'Capture the Relic Battleground Weekend',
---	'',
 }
 
 
 local defaultDescription = 'During this event players can obtain a 100% XP buff and the opportunity to acquire Event Tickets and <<1>>'
+local battlegroundsString = 'This event enables the <<1>> mode for the duration, and all Battlegrounds matches had a 25% bonus to Alliance Points earned.'
+
 lib.strings.descriptions = {
 	'This is an unknown event. That means it was not detectable by map pins and, has yet to be detected by loot item or quest.',
 	zo_strformat(defaultDescription, 'a variety of other items.'),
@@ -42,6 +51,19 @@ lib.strings.descriptions = {
 	'The main feature of this event is numerous drops in Western Skyrim and the Reach being doubled, including: Kyne\'s Aegis and Vateshran Hollows, Trial Bosses, Daily Delve and World Boss quest rewards, and crafting nodes. Additionally, all bosses from the aforementioned trials, Icereach, Unhallowed Grave, Castle Thorn, and Stone Garden and the Delve and World Bosses will also drop additional loot.',
 
 --	'',
+	zo_strformat(battlegroundsString, 'Chaos Ball'),
+	zo_strformat(battlegroundsString, 'Crazy King'),
+	zo_strformat(battlegroundsString, 'Capture the Relic'),
+	zo_strformat(battlegroundsString, 'Deathmatch'),
+	zo_strformat(battlegroundsString, 'Domination'),
+
+	'',
+	'',
+	'',
+	'',
+	'',
+	
+	
 --	'',
 --	'',
 }

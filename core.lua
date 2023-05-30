@@ -420,9 +420,9 @@ function lib:UpdateActiveEvent(eventIndex)
 	
 	-- Need to set up event if the event was not detected.
 	if self:GetActiveEventIndex() > l_EVENT_UNKNOWN then
-		self:UnregisterEvents()
+		self:UnregisterLookupEvents()
 	else
-		self:RegisterEvents()
+		self:RegisterLookupEvents()
 	end
 end
 
@@ -592,7 +592,7 @@ function lib:RegisterUpdateCallback(callback)
 	if self.eventData then
 		zo_callLater(function()
 			callback(self.active, self:GetCurrentEvent())
-		end, 1000)
+		end, 500)
 	end
 	CALLBACK_MANAGER:RegisterCallback('On_Seasonal_Event_Updated', callback)
 end

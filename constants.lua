@@ -41,9 +41,12 @@ end
 lib.constants.maxTickets			= 12
 lib.constants.currentEventNone		= 0
 lib.constants.currentEventUnknown	= 1
+
 lib.constants.eventTypeNone			= 0
 lib.constants.eventTypeUnknown		= 1
 lib.constants.eventTypeTickets		= 2
+lib.constants.eventTypeBG			= 3
+
 lib.constants.rewardsByNone			= 0
 lib.constants.rewardsByUnknown		= 1
 lib.constants.rewardsByQuest		= 2

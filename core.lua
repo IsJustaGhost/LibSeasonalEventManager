@@ -58,7 +58,6 @@ local lib = _G[LIB_IDENTIFIER]
 		EVENTS_TO_INDEX_MAP[ ITEM_TO_INDEX_MAP[itemId] ]
 		EVENTS_TO_INDEX_MAP[ QUEST_TO_INDEX_MAP[zoneIdex][questName] ]
 ]]
-
 ---------------------------------------------------------------------------
 -- Locals
 ---------------------------------------------------------------------------
@@ -117,8 +116,6 @@ end
 local function isMapLocationVisible(zoneIndex, subzoneIndex, locIndex)
 	local currentZoneIndex = GetCurrentMapZoneIndex()
 	-- make sure the map is currently displaying the correct zone
-	if currentZoneIndex ~= zoneIndex then
-	end
 	WORLD_MAP_MANAGER:SetMapById((GetMapIdByIndex(zoneIndex)))
 	
 	if subzoneIndex > 0 then
@@ -130,9 +127,14 @@ local function isMapLocationVisible(zoneIndex, subzoneIndex, locIndex)
 	local isVisible = IsMapLocationVisible(locIndex)
 	
 	-- Lets change the map back to the previously selected map or player's position.
-	currentZoneIndex = currentZoneIndex > 0 and currentZoneIndex or GetUnitZoneIndex("player")
-	WORLD_MAP_MANAGER:SetMapById((GetMapIdByIndex(currentZoneIndex)))
-		
+	jo_callLater(LIB_IDENTIFIER .. '_ResetMap', function()
+		if currentZoneIndex > 0 then
+			WORLD_MAP_MANAGER:SetMapById((GetMapIdByIndex(currentZoneIndex)))
+		elseif SetMapToPlayerLocation() == SET_MAP_RESULT_MAP_CHANGED then
+			CALLBACK_MANAGER:FireCallbacks("OnWorldMapChanged", true)
+		end
+	end, 100)
+
 	return isVisible
 end
 
@@ -575,7 +577,7 @@ function lib:GetActiveEventType()
 end
 
 function lib:GetCurrentEvent()
-	return self.currentEvent or defaultEvent
+	return self.currentEvent or self.defaultEvent
 end
 
 function lib:GetEventIndexByFilter(eventType)
@@ -637,6 +639,21 @@ end
 ---------------------------------------------------------------------------
 IJA_Seasonal_Event_Manager = lib:New()
 
+if not jo_callLater then
+	function jo_callLater(id, func, ms, ...)
+		local params = {...}
+		if ms == nil then ms = 0 end
+		local name = "JO_CallLater_".. id
+		EVENT_MANAGER:UnregisterForUpdate(name)
+		
+		EVENT_MANAGER:RegisterForUpdate(name, ms,
+			function()
+				EVENT_MANAGER:UnregisterForUpdate(name)
+				func(unpack(params))
+			end)
+		return id
+	end
+end
 --[[
 
 --	/script d( IJA_Seasonal_Event_Manager:GetActiveBattlegound())

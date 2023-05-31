@@ -185,17 +185,17 @@ local original_CheckForAndGetActiveEventType = lib.CheckForAndGetActiveEventType
 local original_GetActiveBattlegound = lib.GetActiveBattlegound
 local battlegroundId = 82
 
-local function setupDebug()
+local function setupDebug(self)
 	if eventType == l_EVENT_TYPE_NONE then
-		lib.GetActiveBattlegound = original_GetActiveBattlegound
-		lib.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
+		self.GetActiveBattlegound = original_GetActiveBattlegound
+		self.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
 	elseif eventType == l_EVENT_TYPE_UNKNOWN then
-		lib.GetActiveBattlegound = original_GetActiveBattlegound
-		lib.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
+		self.GetActiveBattlegound = original_GetActiveBattlegound
+		self.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
 	elseif eventType == l_EVENT_TYPE_TICKETS then
-		lib.GetActiveBattlegound = original_GetActiveBattlegound
+		self.GetActiveBattlegound = original_GetActiveBattlegound
 		
-		function lib:CheckForAndGetActiveEventType()
+		self.CheckForAndGetActiveEventType = function()
 			local activeType = l_EVENT_TYPE_NONE
 			if isActive() then
 			-- Set this to the event type you want to test.
@@ -208,7 +208,7 @@ local function setupDebug()
 		REWARD_TYPE_EVENT_TICKETS = REWARD_TYPE_MONEY
 		
 	elseif eventType == l_EVENT_TYPE_BG then
-		lib.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
+		self.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
 		local standardBatlegrounds = {
 			[1] = true,		-- Group Random Battleground
 			[2] = true,		-- Group Random Battleground
@@ -216,7 +216,7 @@ local function setupDebug()
 			[68] = true,	-- Solo Random Battleground
 		}
 		
-		function lib:GetActiveBattlegound()
+		self.GetActiveBattlegound = function()
 			for _, activityType in pairs({LFG_ACTIVITY_BATTLE_GROUND_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_NON_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_LOW_LEVEL}) do
 				for id, location in pairs(ZO_ACTIVITY_FINDER_ROOT_MANAGER.locationSetsLookupData[activityType]) do
 					if not standardBatlegrounds[id] then
@@ -257,7 +257,7 @@ local function setupDebug()
 		]]
 	end
 end
-setupDebug()
+setupDebug(lib)
 
 ---------------------------------------------------------------------------
 -- Simulation settings
@@ -265,7 +265,7 @@ setupDebug()
 --	/script IJA_Seasonal_Event_Manager:SetDebugEventType(3)
 function lib:SetDebugEventType(newEventType)
 	eventType = newEventType
-	setupDebug()
+	setupDebug(self)
 end
 
 --	/script IJA_Seasonal_Event_Manager:SetDebugDaysPerEvent(3)

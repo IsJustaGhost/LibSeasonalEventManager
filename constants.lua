@@ -56,16 +56,16 @@ lib.constants.rewardsByTarget		= 4
 lib.constants.stringEmpty			= ''
 
 --[[
-local l_EVENT_ANNIVERSARY		= 2
-local l_EVENT_JESTER			= 3
-local l_EVENT_MAYHEM			= 4
-local l_EVENT_WITCHES			= 5
-local l_EVENT_MAX_KNOWN		= 5
+local var_EVENT_ANNIVERSARY		= 2
+local var_EVENT_JESTER			= 3
+local var_EVENT_MAYHEM			= 4
+local var_EVENT_WITCHES			= 5
+local var_EVENT_MAX_KNOWN		= 5
 
-local l_EVENT_NEWLIFE			= 6
-local l_EVENT_UNDAUNTED		= 7
-local l_EVENT_TRIBUNAL		= 8
-local l_EVENT_ZENITHAR		= 9
-local l_EVENT_DARKHEART		= 10
-local l_EVENT_STEADFAST		= 11
+local var_EVENT_NEWLIFE			= 6
+local var_EVENT_UNDAUNTED		= 7
+local var_EVENT_TRIBUNAL		= 8
+local var_EVENT_ZENITHAR		= 9
+local var_EVENT_DARKHEART		= 10
+local var_EVENT_STEADFAST		= 11
 ]]

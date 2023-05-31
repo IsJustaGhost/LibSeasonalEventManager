@@ -6,28 +6,25 @@ end
 
 local lib = _G[LIB_IDENTIFIER]
 
-local getString 			= lib.GetString
+local getString 				= lib.GetString
 
-local l_EVENT_NONE			= lib.constants.currentEventNone
-local l_EVENT_UNKNOWN		= lib.constants.currentEventUnknown
+local var_EVENT_NONE			= lib.constants.currentEventNone
+local var_EVENT_UNKNOWN			= lib.constants.currentEventUnknown
 
-local l_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
-local l_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
-local l_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
-local l_EVENT_TYPE_BG		= lib.constants.eventTypeBG
+local var_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
+local var_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
+local var_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
+local var_EVENT_TYPE_BG			= lib.constants.eventTypeBG
 
-local l_REWARDS_BY_NONE		= lib.constants.rewardsByNone
-local l_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
-local l_REWARDS_BY_QUEST	= lib.constants.rewardsByQuest
-local l_REWARDS_BY_LOOT		= lib.constants.rewardsByLoot
-local l_REWARDS_BY_TARGET	= lib.constants.rewardsByTarget
+local var_REWARDS_BY_NONE		= lib.constants.rewardsByNone
+local var_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
+local var_REWARDS_BY_QUEST		= lib.constants.rewardsByQuest
+local var_REWARDS_BY_LOOT		= lib.constants.rewardsByLoot
+local var_REWARDS_BY_TARGET		= lib.constants.rewardsByTarget
 
-local l_EVENT_HAS_MAP_LOCATION 	= 'has_map_location'
-local l_EVENT_NO_MAP_LOCATION 	= 'no_map_location'
-
-lib.eventsToIndexMap[l_EVENT_UNKNOWN] = {
-	['eventType'] = l_EVENT_TYPE_UNKNOWN,
-	['rewardsBy'] = l_REWARDS_BY_UNKNOWN,
+lib.eventsToIndexMap[var_EVENT_UNKNOWN] = {
+	['eventType'] = var_EVENT_TYPE_UNKNOWN,
+	['rewardsBy'] = var_REWARDS_BY_UNKNOWN,
 	['maxDailyRewards'] = 0,
 }
 
@@ -36,8 +33,8 @@ lib.eventsToIndexMap[l_EVENT_UNKNOWN] = {
 ---------------------------------------------------------------------------
 local events = {
 	{ -- Anniversary Jubilee
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_REWARDS_BY_TARGET,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_REWARDS_BY_TARGET,
 		['maxDailyRewards'] = 3,
 		['targets'] = {lib.constants.currentJubileeCakeName},
 		['location'] = {
@@ -48,8 +45,8 @@ local events = {
 		},
 	},
 	{ -- Jester's Festival
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_REWARDS_BY_QUEST,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_REWARDS_BY_QUEST,
 		['maxDailyRewards'] = 3,
 		['location'] = {
 			["zoneIndex"] = 2,
@@ -58,8 +55,8 @@ local events = {
 		},
 	},
 	{ -- Whitestrake's Mayhem Celebration
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_REWARDS_BY_QUEST,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_REWARDS_BY_QUEST,
 		['maxDailyRewards'] = 3,
 		['location'] = {
 			["zoneIndex"] = 2,
@@ -68,8 +65,8 @@ local events = {
 		},
 	},
 	{ -- Witch's Festival
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_REWARDS_BY_LOOT,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_REWARDS_BY_LOOT,
 		['maxDailyRewards'] = 2,
 		['location'] = {
 			["zoneIndex"] = 2,
@@ -78,8 +75,8 @@ local events = {
 		},
 	},
 	{ -- New Life Festival
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_EVENT_TYPE_QUEST,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_EVENT_TYPE_QUEST,
 		['maxDailyRewards'] = 3,
 		['itemIds'] = {
 			96390, 133557, 141823, 156779, 182494, 171327, 192368
@@ -90,8 +87,8 @@ local events = {
 		},
 	},
 	{ -- Undaunted Celebration
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_EVENT_TYPE_LOOT,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_EVENT_TYPE_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			171268,156717,156679
@@ -99,8 +96,8 @@ local events = {
 	},
 	-- ?
 	{ -- Season of the Dragon Celebration
-		['eventType'] = l_EVENT_TYPE_UNKNOWN,
-		['rewardsBy'] = l_EVENT_TYPE_LOOT,
+		['eventType'] = var_EVENT_TYPE_UNKNOWN,
+		['rewardsBy'] = var_EVENT_TYPE_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {-- Elsweyr Coffer
 			175580, 193735, 175579, 193734
@@ -120,8 +117,8 @@ local events = {
 		},
 	},
 	{ -- Daedric War Celebration Event
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_EVENT_TYPE_QUEST,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_EVENT_TYPE_QUEST,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			182592,182599,171480,171476
@@ -151,8 +148,8 @@ local events = {
 		},
 	},
 	{ -- Zeal of Zenithar
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_EVENT_TYPE_QUEST,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_EVENT_TYPE_QUEST,
 		['maxDailyRewards'] = 3,
 		['itemIds'] = { 
 			187746,187701,187700
@@ -164,8 +161,8 @@ local events = {
 		},
 	},
 	{ -- Dark Heart of Skyrim Celebration
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_EVENT_TYPE_QUEST,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_EVENT_TYPE_QUEST,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			193762
@@ -178,40 +175,40 @@ local events = {
 	},
 	-- Battlegrounds weekends
 	{ -- Chaos Ball PVP Weekend
-		['eventType'] = l_EVENT_TYPE_BG,
-		['rewardsBy'] = l_REWARDS_BY_NONE,
+		['eventType'] = var_EVENT_TYPE_BG,
+		['rewardsBy'] = var_REWARDS_BY_NONE,
 		['maxDailyRewards'] = 0,
 		['battlegrounds'] = {
 			82, 88, 92, 97,
 		},
 	},
 	{ -- Crazy King PVP Weekend
-		['eventType'] = l_EVENT_TYPE_BG,
-		['rewardsBy'] = l_REWARDS_BY_NONE,
+		['eventType'] = var_EVENT_TYPE_BG,
+		['rewardsBy'] = var_REWARDS_BY_NONE,
 		['maxDailyRewards'] = 0,
 		['battlegrounds'] = {
 			83, 89, 93, 98,
 		},
 	},
 	{ -- Relic PVP Weekend
-		['eventType'] = l_EVENT_TYPE_BG,
-		['rewardsBy'] = l_REWARDS_BY_NONE,
+		['eventType'] = var_EVENT_TYPE_BG,
+		['rewardsBy'] = var_REWARDS_BY_NONE,
 		['maxDailyRewards'] = 0,
 		['battlegrounds'] = {
 			84, 87, 94, 99,
 		},
 	},
 	{ -- Deathmatch PVP Weekend
-		['eventType'] = l_EVENT_TYPE_BG,
-		['rewardsBy'] = l_REWARDS_BY_NONE,
+		['eventType'] = var_EVENT_TYPE_BG,
+		['rewardsBy'] = var_REWARDS_BY_NONE,
 		['maxDailyRewards'] = 0,
 		['battlegrounds'] = {
 			85, 90, 95, 100,
 		},
 	},
 	{ -- Domination PVP Weekend
-		['eventType'] = l_EVENT_TYPE_BG,
-		['rewardsBy'] = l_REWARDS_BY_NONE,
+		['eventType'] = var_EVENT_TYPE_BG,
+		['rewardsBy'] = var_REWARDS_BY_NONE,
 		['maxDailyRewards'] = 0,
 		['battlegrounds'] = {
 			86, 91, 96, 101,

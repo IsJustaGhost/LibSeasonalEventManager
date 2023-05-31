@@ -9,14 +9,14 @@ local lib = _G[LIB_IDENTIFIER]
 ---------------------------------------------------------------------------
 -- Event locals
 ---------------------------------------------------------------------------
-local l_EVENT_NONE			= lib.constants.currentEventNone
-local l_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
-local l_REWARDS_BY_NONE		= lib.constants.rewardsByNone
+local var_EVENT_NONE			= lib.constants.currentEventNone
+local var_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
+local var_REWARDS_BY_NONE		= lib.constants.rewardsByNone
 
 local defaultEventInfo = {
-	['index'] 		= l_EVENT_NONE,
-	['eventType'] 	= l_EVENT_TYPE_NONE,
-	['rewardsBy'] 	= l_REWARDS_BY_NONE,
+	['index'] 		= var_EVENT_NONE,
+	['eventType'] 	= var_EVENT_TYPE_NONE,
+	['rewardsBy'] 	= var_REWARDS_BY_NONE,
 }
 
 ---------------------------------------------------------------------------

@@ -10,25 +10,25 @@ end
 
 local lib = _G[LIB_IDENTIFIER]
 
-local l_EVENT_NONE			= lib.constants.currentEventNone
-local l_EVENT_UNKNOWN		= lib.constants.currentEventUnknown
+local var_EVENT_NONE			= lib.constants.currentEventNone
+local var_EVENT_UNKNOWN		= lib.constants.currentEventUnknown
 
-local l_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
-local l_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
-local l_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
-local l_EVENT_TYPE_BG		= lib.constants.eventTypeBG
+local var_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
+local var_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
+local var_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
+local var_EVENT_TYPE_BG		= lib.constants.eventTypeBG
 
-local l_REWARDS_BY_NONE		= lib.constants.rewardsByNone
-local l_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
-local l_REWARDS_BY_QUEST	= lib.constants.rewardsByQuest
-local l_REWARDS_BY_LOOT		= lib.constants.rewardsByLoot
-local l_REWARDS_BY_TARGET	= lib.constants.rewardsByTarget
+local var_REWARDS_BY_NONE		= lib.constants.rewardsByNone
+local var_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
+local var_REWARDS_BY_QUEST	= lib.constants.rewardsByQuest
+local var_REWARDS_BY_LOOT		= lib.constants.rewardsByLoot
+local var_REWARDS_BY_TARGET	= lib.constants.rewardsByTarget
 
 
-lib.eventsToIndexMap[l_EVENT_UNKNOWN] = {
+lib.eventsToIndexMap[var_EVENT_UNKNOWN] = {
 	['index'] = 1,
-	['eventType'] = l_EVENT_TYPE_TICKETS,
-	['rewardsBy'] = l_REWARDS_BY_UNKNOWN,
+	['eventType'] = var_EVENT_TYPE_TICKETS,
+	['rewardsBy'] = var_REWARDS_BY_UNKNOWN,
 	['maxDailyRewards'] = 0,
 }
 
@@ -42,10 +42,10 @@ getDailyResetTimeRemainingSeconds()
 lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
 
 function lib:CheckForAndGetActiveEventType()
-	local activeType = l_EVENT_TYPE_NONE
+	local activeType = var_EVENT_TYPE_NONE
 	if currentDay < daysPerEvent then
 	-- Set this to the event type you want to test.
-		activeType = l_EVENT_TYPE_TICKETS
+		activeType = var_EVENT_TYPE_TICKETS
 	end
 
 	return activeType
@@ -59,24 +59,24 @@ REWARD_TYPE_EVENT_TICKETS = REWARD_TYPE_MONEY
 ---------------------------------------------------------------------------
 local events = {
 	{ -- Woodwork Raw Material
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_EVENT_TYPE_TARGET,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_EVENT_TYPE_TARGET,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			4439, 23117, 818, 23118, 23137, 802, 23138, 521, 71199, 23119
 		},
 	},
 	{ -- Blacksmith Raw Material
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_EVENT_TICKETS_LOOT,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_EVENT_TICKETS_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			4482, 23104, 23105, 23133, 5820, 808, 23103, 23134, 71198, 23135
 		},
 	},
 	{ -- Clothier Raw Material
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_EVENT_TICKETS_LOOT,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_EVENT_TICKETS_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			723097, 4448, 23143, 23095, 71200, 23129, 23131, 4464, 33218, 812,
@@ -84,8 +84,8 @@ local events = {
 		},
 	},
 	{ -- Reagents
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_EVENT_TICKETS_LOOT,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_EVENT_TICKETS_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			77583, 30157, 30148, 30160, 77585, 150669, 139020, 30164, 30161,
@@ -95,8 +95,8 @@ local events = {
 		},
 	},
 	{ -- Vivec City Hall of Justice
-		['eventType'] = l_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = l_EVENT_TICKETS_QUEST,
+		['eventType'] = var_EVENT_TYPE_TICKETS,
+		['rewardsBy'] = var_EVENT_TICKETS_QUEST,
 		['maxDailyRewards'] = 2,
 		['quests'] = {
 			5906, 5904, 5866, 5865, 5918, 5916
@@ -138,7 +138,7 @@ insertDebug(descriptions, lib.strings.descriptions)
 ---------------------------------------------------------------------------
 -- Simulation
 ---------------------------------------------------------------------------
-local eventType = l_EVENT_TYPE_TICKETS
+local eventType = var_EVENT_TYPE_TICKETS
 
 -- Event run time simulation.
 local lastTime = 0
@@ -186,20 +186,20 @@ local original_GetActiveBattlegound = lib.GetActiveBattlegound
 local battlegroundId = 82
 
 local function setupDebug(self)
-	if eventType == l_EVENT_TYPE_NONE then
+	if eventType == var_EVENT_TYPE_NONE then
 		self.GetActiveBattlegound = original_GetActiveBattlegound
 		self.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
-	elseif eventType == l_EVENT_TYPE_UNKNOWN then
+	elseif eventType == var_EVENT_TYPE_UNKNOWN then
 		self.GetActiveBattlegound = original_GetActiveBattlegound
 		self.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
-	elseif eventType == l_EVENT_TYPE_TICKETS then
+	elseif eventType == var_EVENT_TYPE_TICKETS then
 		self.GetActiveBattlegound = original_GetActiveBattlegound
 		
 		self.CheckForAndGetActiveEventType = function()
-			local activeType = l_EVENT_TYPE_NONE
+			local activeType = var_EVENT_TYPE_NONE
 			if isActive() then
 			-- Set this to the event type you want to test.
-				activeType = l_EVENT_TYPE_TICKETS
+				activeType = var_EVENT_TYPE_TICKETS
 			end
 
 			return activeType
@@ -207,7 +207,7 @@ local function setupDebug(self)
 		-- Changing this so gold will trigger checks
 		REWARD_TYPE_EVENT_TICKETS = REWARD_TYPE_MONEY
 		
-	elseif eventType == l_EVENT_TYPE_BG then
+	elseif eventType == var_EVENT_TYPE_BG then
 		self.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
 		local standardBatlegrounds = {
 			[1] = true,		-- Group Random Battleground

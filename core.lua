@@ -62,30 +62,30 @@ local lib = _G[LIB_IDENTIFIER]
 -- Locals
 ---------------------------------------------------------------------------
 
-local l_TICKETS_MAX			= lib.constants.maxTickets
+local var_TICKETS_MAX			= lib.constants.maxTickets
 
-local l_EVENT_NONE			= lib.constants.currentEventNone
-local l_EVENT_UNKNOWN		= lib.constants.currentEventUnknown
+local var_EVENT_NONE			= lib.constants.currentEventNone
+local var_EVENT_UNKNOWN		= lib.constants.currentEventUnknown
 
-local l_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
-local l_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
-local l_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
-local l_EVENT_TYPE_BG		= lib.constants.eventTypeBG
+local var_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
+local var_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
+local var_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
+local var_EVENT_TYPE_BG		= lib.constants.eventTypeBG
 
-local l_REWARDS_BY_NONE		= lib.constants.rewardsByNone
-local l_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
-local l_REWARDS_BY_QUEST	= lib.constants.rewardsByQuest
-local l_REWARDS_BY_LOOT		= lib.constants.rewardsByLoot
-local l_REWARDS_BY_TARGET	= lib.constants.rewardsByTarget
+local var_REWARDS_BY_NONE		= lib.constants.rewardsByNone
+local var_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
+local var_REWARDS_BY_QUEST	= lib.constants.rewardsByQuest
+local var_REWARDS_BY_LOOT		= lib.constants.rewardsByLoot
+local var_REWARDS_BY_TARGET	= lib.constants.rewardsByTarget
 
-local l_EmptyString 		= lib.constants.stringEmpty
+local var_EmptyString 		= lib.constants.stringEmpty
 
 local getString 			= lib.GetString
 
 local defaultEventInfo = {
-	['index'] 		= l_EVENT_NONE,
-	['eventType'] 	= l_EVENT_TYPE_NONE,
-	['rewardsBy'] 	= l_REWARDS_BY_NONE,
+	['index'] 		= var_EVENT_NONE,
+	['eventType'] 	= var_EVENT_TYPE_NONE,
+	['rewardsBy'] 	= var_REWARDS_BY_NONE,
 }
 
 local questTypes = {
@@ -143,48 +143,13 @@ local function doesEventHaveVisiblePin(locationInfo)
 end
 
 ---------------------------------------------------------------------------
--- 
----------------------------------------------------------------------------
---[[
-local function isItemForEvent(itemIds, lootItemId)
-	for i, itemId in pairs(itemIds) do
-		if itemId == lootItemId then
-			return true
-		end
-	end
-end
-
-local function isQuestForEvent(quests, questName)
-	local zoneQuests = quests[GetUnitZoneIndex('player')] or {}
-	for k, qName in pairs(zoneQuests) do
-		if qName == questName then
-			return true
-		end
-	end
-end
-
-local function processQuestNames(quests)
-	local _quests = {}
-	for zoneIndex, questIds in pairs(quests) do
-		local temp = {}
-		for zoneId, questId in pairs(questIds) do
-			table.insert(temp, GetQuestName(questId))
-		end
-		_quests[zoneIndex] = temp
-	end
-	return _quests
-end
-
-]]
-
----------------------------------------------------------------------------
 -- lib
 ---------------------------------------------------------------------------
 local svVersion = 1
 local svDefaults = {
 	eventData = {
-		eventIndex = l_EVENT_NONE,
-		eventType = l_EVENT_TYPE_NONE,
+		eventIndex = var_EVENT_NONE,
+		eventType = var_EVENT_TYPE_NONE,
 	}
 }
 
@@ -196,7 +161,7 @@ function lib:Initialize()
 		self.savedVars = ZO_SavedVars:NewAccountWide('LibSesonalEventManager_SV_Data', svVersion, nil, svDefaults, GetWorldName(), "$AllAccounts")
 		self.eventData = self.savedVars.eventData
 		
-		self:SetActiveEventType(l_EVENT_TYPE_NONE)
+		self:SetActiveEventType(var_EVENT_TYPE_NONE)
 		
 		local function onPlayerActivated()
 			EVENT_MANAGER:UnregisterForEvent(LIB_IDENTIFIER, EVENT_ADD_ON_LOADED)
@@ -230,7 +195,7 @@ function lib:RegisterLookupEvents()
 		for i, data in ipairs(rewardDataList) do
 			if data.rewardType == REWARD_TYPE_EVENT_TICKETS then
 			
-				if self:GetActiveEventIndex() == l_EVENT_UNKNOWN then
+				if self:GetActiveEventIndex() == var_EVENT_UNKNOWN then
 					local eventIndex = self:GetEventIndexByQuestName(questName)
 					if eventIndex then
 						self:UpdateActiveEventIndex(eventIndex)
@@ -244,7 +209,7 @@ function lib:RegisterLookupEvents()
 	
     local function onInventorySingleSlotUpdate(eventId, bagId, slotId, isNewItem, itemIdsoundCategory, updateReason, stackCountChange)
 		if stackCountChange > 0 then
-			if self:GetActiveEventIndex() > l_EVENT_UNKNOWN then
+			if self:GetActiveEventIndex() > var_EVENT_UNKNOWN then
 				local itemId = GetItemId(bagId, slotId)
 				local eventIndex = self:GetEventIndexByItemId(itemId)
 				if eventIndex then
@@ -305,7 +270,7 @@ function lib:GetImresarioFromMap()
 	local locIndex = 24
 	
 	local isTicketEvent = isMapLocationVisible(zoneIndex, subzoneIndex, locIndex)
-	return isTicketEvent, l_EVENT_TYPE_TICKETS
+	return isTicketEvent, var_EVENT_TYPE_TICKETS
 end
 
 function lib:GetActiveBattlegound()
@@ -322,31 +287,31 @@ end
 
 function lib:CheckForAndGetActiveEventType()
 	if self:GetImresarioFromMap() then
-		return l_EVENT_TYPE_TICKETS
+		return var_EVENT_TYPE_TICKETS
 	elseif self:GetActiveBattlegound() ~= nil then
-		return l_EVENT_TYPE_BG
+		return var_EVENT_TYPE_BG
 	end
 	
-	return l_EVENT_TYPE_NONE
+	return var_EVENT_TYPE_NONE
 end
 
 function lib:CheckForActiveEvent()
 	local activeType = self:CheckForAndGetActiveEventType()
 	
 	self:SetActiveEventType(activeType)
-	if activeType == l_EVENT_TYPE_BG then
+	if activeType == var_EVENT_TYPE_BG then
 		local bgId = self:GetActiveBattlegound()
 		self.eventData.eventIndex = self:GetEventIndexByBattleGroundId(bgId)
 	end
 	
-	return activeType ~= l_EVENT_TYPE_NONE
+	return activeType ~= var_EVENT_TYPE_NONE
 end
 
 function lib:Activate()
 	self:ResetToSavedEvent()
 	
-	if self:GetActiveEventIndex() == l_EVENT_UNKNOWN then
-		if self.eventData.eventType == l_EVENT_TYPE_BG then
+	if self:GetActiveEventIndex() == var_EVENT_UNKNOWN then
+		if self.eventData.eventType == var_EVENT_TYPE_BG then
 		else
 			for questIndex = 1, GetNumJournalQuests() do
 				local questName, _, _, _, _, _, _, _, _, questType = GetJournalQuestInfo(questIndex)
@@ -363,8 +328,8 @@ function lib:Activate()
 end
 
 function lib:Deactivate()
-	self:SetActiveEventType(l_EVENT_TYPE_NONE)
-	self.eventData.eventIndex = l_EVENT_NONE
+	self:SetActiveEventType(var_EVENT_TYPE_NONE)
+	self.eventData.eventIndex = var_EVENT_NONE
 	
 	self.currentEvent = self.defaultEvent
 	self:UnregisterEvents()
@@ -418,10 +383,12 @@ function lib:UpdateActiveEvent(eventIndex)
 		local newEvent = self.event_class:New(eventInfo)
 		self.currentEvent = newEvent
 		self:SetActiveEventType(eventInfo.eventType)
+	else
+		self.currentEvent = self.defaultEvent
 	end
 	
-	-- Need to set up event if the event was not detected.
-	if self:GetActiveEventIndex() > l_EVENT_UNKNOWN then
+	-- Need to register events if the event was not detected.
+	if self:GetActiveEventIndex() > var_EVENT_UNKNOWN then
 		self:UnregisterLookupEvents()
 	else
 		self:RegisterLookupEvents()
@@ -434,7 +401,7 @@ function lib:UpdateActiveEventIndex(eventIndex)
 		return self:GetActiveEventIndex() ~= eventIndex
 	end
 	
-	if eventIndex == l_EVENT_NONE then
+	if eventIndex == var_EVENT_NONE then
 		eventIndex = self:GetEventIndexByVisibleLocation()
 	end
 	if isNewEvent(eventIndex) then
@@ -469,7 +436,7 @@ function lib:GetEventIndexByVisibleLocation()
 		end
 	end
 
-	return l_EVENT_UNKNOWN
+	return var_EVENT_UNKNOWN
 end
 
 ---------------------------------------------------------------------------
@@ -562,18 +529,18 @@ function lib.GetDailyResetTimeRemainingSeconds()
 end
 
 function lib:IsEventActive()
-	return self.eventData.eventType ~= l_EVENT_TYPE_NONE
+	return self.eventData.eventType ~= var_EVENT_TYPE_NONE
 end
 
 function lib:GetActiveEventIndex()
 	if self.currentEvent then
 		return self.currentEvent:GetIndex()
 	end
-	return l_EVENT_NONE
+	return var_EVENT_NONE
 end
 
 function lib:GetActiveEventType()
-	return self.eventData.eventType or l_EVENT_TYPE_NONE
+	return self.eventData.eventType or var_EVENT_TYPE_NONE
 end
 
 function lib:GetCurrentEvent()
@@ -606,28 +573,28 @@ function lib:GetEventTitle()
 	if self.currentEvent then
 		return self.currentEvent:GetTitle()
 	end
-	return l_EmptyString
+	return var_EmptyString
 end
 
 function lib:GetEventDescription()
 	if self.currentEvent then
 		return self.currentEvent:GetDescription()
 	end
-	return l_EmptyString
+	return var_EmptyString
 end
 
 function lib:GetEventInfo()
 	if self.currentEvent then
 		return self.currentEvent:GetInfo()
 	end
-	return l_EmptyString, l_EmptyString
+	return var_EmptyString, var_EmptyString
 end
 
 function lib:GetEventMaxDailyRewards()
 	if self.currentEvent then
 		return self.currentEvent:GetMaxDailyRewards()
 	end
-	return l_EVENT_NONE
+	return var_EVENT_NONE
 end
 
 function lib:IsImpresarioVisible()

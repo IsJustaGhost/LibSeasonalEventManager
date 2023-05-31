@@ -60,7 +60,7 @@ REWARD_TYPE_EVENT_TICKETS = REWARD_TYPE_MONEY
 local events = {
 	{ -- Woodwork Raw Material
 		['eventType'] = var_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = var_EVENT_TYPE_TARGET,
+		['rewardsBy'] = var_REWARDS_BY_TARGET,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			4439, 23117, 818, 23118, 23137, 802, 23138, 521, 71199, 23119
@@ -68,7 +68,7 @@ local events = {
 	},
 	{ -- Blacksmith Raw Material
 		['eventType'] = var_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = var_EVENT_TICKETS_LOOT,
+		['rewardsBy'] = var_REWARDS_BY_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			4482, 23104, 23105, 23133, 5820, 808, 23103, 23134, 71198, 23135
@@ -76,7 +76,7 @@ local events = {
 	},
 	{ -- Clothier Raw Material
 		['eventType'] = var_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = var_EVENT_TICKETS_LOOT,
+		['rewardsBy'] = var_REWARDS_BY_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			723097, 4448, 23143, 23095, 71200, 23129, 23131, 4464, 33218, 812,
@@ -85,7 +85,7 @@ local events = {
 	},
 	{ -- Reagents
 		['eventType'] = var_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = var_EVENT_TICKETS_LOOT,
+		['rewardsBy'] = var_REWARDS_BY_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			77583, 30157, 30148, 30160, 77585, 150669, 139020, 30164, 30161,
@@ -96,7 +96,7 @@ local events = {
 	},
 	{ -- Vivec City Hall of Justice
 		['eventType'] = var_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = var_EVENT_TICKETS_QUEST,
+		['rewardsBy'] = var_REWARDS_BY_LOOT,
 		['maxDailyRewards'] = 2,
 		['quests'] = {
 			5906, 5904, 5866, 5865, 5918, 5916

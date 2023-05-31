@@ -11,18 +11,18 @@ end
 local lib = _G[LIB_IDENTIFIER]
 
 local var_EVENT_NONE			= lib.constants.currentEventNone
-local var_EVENT_UNKNOWN		= lib.constants.currentEventUnknown
+local var_EVENT_UNKNOWN			= lib.constants.currentEventUnknown
 
 local var_EVENT_TYPE_NONE		= lib.constants.eventTypeNone
 local var_EVENT_TYPE_UNKNOWN	= lib.constants.eventTypeUnknown
 local var_EVENT_TYPE_TICKETS	= lib.constants.eventTypeTickets
-local var_EVENT_TYPE_BG		= lib.constants.eventTypeBG
+local var_EVENT_TYPE_BG			= lib.constants.eventTypeBG
 
 local var_REWARDS_BY_NONE		= lib.constants.rewardsByNone
 local var_REWARDS_BY_UNKNOWN	= lib.constants.rewardsByUnknown
-local var_REWARDS_BY_QUEST	= lib.constants.rewardsByQuest
+local var_REWARDS_BY_QUEST		= lib.constants.rewardsByQuest
 local var_REWARDS_BY_LOOT		= lib.constants.rewardsByLoot
-local var_REWARDS_BY_TARGET	= lib.constants.rewardsByTarget
+local var_REWARDS_BY_TARGET		= lib.constants.rewardsByTarget
 
 
 lib.eventsToIndexMap[var_EVENT_UNKNOWN] = {

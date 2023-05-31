@@ -76,7 +76,7 @@ local events = {
 	},
 	{ -- New Life Festival
 		['eventType'] = var_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = var_EVENT_TYPE_QUEST,
+		['rewardsBy'] = var_REWARDS_BY_QUEST,
 		['maxDailyRewards'] = 3,
 		['itemIds'] = {
 			96390, 133557, 141823, 156779, 182494, 171327, 192368
@@ -88,7 +88,7 @@ local events = {
 	},
 	{ -- Undaunted Celebration
 		['eventType'] = var_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = var_EVENT_TYPE_LOOT,
+		['rewardsBy'] = var_REWARDS_BY_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			171268,156717,156679
@@ -97,7 +97,7 @@ local events = {
 	-- ?
 	{ -- Season of the Dragon Celebration
 		['eventType'] = var_EVENT_TYPE_UNKNOWN,
-		['rewardsBy'] = var_EVENT_TYPE_LOOT,
+		['rewardsBy'] = var_REWARDS_BY_LOOT,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {-- Elsweyr Coffer
 			175580, 193735, 175579, 193734
@@ -118,7 +118,7 @@ local events = {
 	},
 	{ -- Daedric War Celebration Event
 		['eventType'] = var_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = var_EVENT_TYPE_QUEST,
+		['rewardsBy'] = var_REWARDS_BY_QUEST,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			182592,182599,171480,171476
@@ -149,7 +149,7 @@ local events = {
 	},
 	{ -- Zeal of Zenithar
 		['eventType'] = var_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = var_EVENT_TYPE_QUEST,
+		['rewardsBy'] = var_REWARDS_BY_QUEST,
 		['maxDailyRewards'] = 3,
 		['itemIds'] = { 
 			187746,187701,187700
@@ -162,7 +162,7 @@ local events = {
 	},
 	{ -- Dark Heart of Skyrim Celebration
 		['eventType'] = var_EVENT_TYPE_TICKETS,
-		['rewardsBy'] = var_EVENT_TYPE_QUEST,
+		['rewardsBy'] = var_REWARDS_BY_QUEST,
 		['maxDailyRewards'] = 2,
 		['itemIds'] = {
 			193762

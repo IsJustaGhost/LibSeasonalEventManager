@@ -1,5 +1,5 @@
 
-local ignore = true
+local ignore = false
 
 if ignore then return end
 
@@ -116,37 +116,30 @@ insertDebug(descriptions, lib.strings.descriptions)
 ---------------------------------------------------------------------------
 -- Simulation
 ---------------------------------------------------------------------------
-local eventType = var_EVENT_TYPE_TICKETS
-
 -- Event run time simulation.
 local lastTime = 0
 local secPerDay = 30
 local daysPerEvent = 2
 local currentDay = 0
 
-local frameTimeSeconds
+local frameTimeSeconds = GetFrameTimeSeconds()
+
+local function reset()
+	currentDay = 0
+	lastTime = 0
+end
 
 local function getDailyResetTimeRemainingSeconds()
-	local secondsRemaining = math.floor(lastTime - frameTimeSeconds)
-	return secondsRemaining > 0 and secondsRemaining or 0
+	return zo_max((lastTime - frameTimeSeconds), 0)
 end
+
 getDailyResetTimeRemainingSeconds()
 lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
 
-function lib:CheckForAndGetActiveEventType()
-	local activeType = var_EVENT_TYPE_NONE
-	if currentDay < daysPerEvent then
-	-- Set this to the event type you want to test.
-		activeType = var_EVENT_TYPE_TICKETS
-	end
-
-	return activeType
-end
-
 local function updateTime(timeMS)
---	frameTimeSeconds = math.floor(timeMS / 1000)
-	if lastTime <= timeMS then
-		lastTime = timeMS + (secPerDay * 1000)
+	frameTimeSeconds = GetFrameTimeSeconds()
+	if lastTime <= frameTimeSeconds then
+		lastTime = frameTimeSeconds + secPerDay
 		
 		if daysPerEvent > 0 then
 			if currentDay > daysPerEvent then
@@ -179,6 +172,8 @@ end
 local original_CheckForAndGetActiveEventType = lib.CheckForAndGetActiveEventType
 local original_GetActiveBattlegound = lib.GetActiveBattlegound
 local battlegroundId = 82
+
+local eventType = var_EVENT_TYPE_TICKETS
 
 local function setupDebug(self)
 	if eventType == var_EVENT_TYPE_NONE then
@@ -261,21 +256,25 @@ setupDebug(lib)
 function lib:SetDebugEventType(newEventType)
 	eventType = newEventType
 	setupDebug(self)
+	reset()
 end
 
 --	/script IJA_Seasonal_Event_Manager:SetDebugDaysPerEvent(3)
 function lib:SetDebugDaysPerEvent(days)
 	daysPerEvent = days
 	currentDay = daysPerEvent
+	reset()
 end
 
 --	/script IJA_Seasonal_Event_Manager:SetDebugSecondsPerDay(10)
 function lib:SetDebugSecondsPerDay(secs)
 	secPerDay = secs
+	reset()
 end
 
 --	/script IJA_Seasonal_Event_Manager:SetDebugBattlegroundId(100)
 function lib:SetDebugBattlegroundId(id)
 	battlegroundId = id
+	reset()
 end
 

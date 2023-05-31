@@ -32,35 +32,6 @@ lib.eventsToIndexMap[l_EVENT_UNKNOWN] = {
 	['maxDailyRewards'] = 0,
 }
 
--- Event run time simulation.
-local lastTime = 0
-local secPerDay = 30
-local daysPerEvent = 2
-local currentDay = daysPerEvent
-
-local frameTimeSeconds
-
-local function updateTime(timeMS)
-	frameTimeSeconds = math.floor(timeMS / 1000)
-	if lastTime <= frameTimeSeconds then
-		lastTime = frameTimeSeconds + secPerDay
-		
-		if currentDay >= daysPerEvent then
-			currentDay = 0
-		else
-			currentDay = currentDay + 1
-		end
-	
-		if currentDay >= daysPerEvent then
-			d( '-- No Event Active --')
-		else
-			d( '-- Event Day: ' .. (currentDay +1) .. ' --')
-		end
-	end
-end
-updateTime(GetFrameTimeSeconds() * 1000)
-
-EVENT_MANAGER:RegisterForUpdate(LIB_IDENTIFIER .. '_ResetTimeUpdate', 1000, updateTime)
 	
 	
 local function getDailyResetTimeRemainingSeconds()
@@ -70,8 +41,6 @@ end
 getDailyResetTimeRemainingSeconds()
 lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
 
-
---[[
 function lib:CheckForAndGetActiveEventType()
 	local activeType = l_EVENT_TYPE_NONE
 	if currentDay < daysPerEvent then
@@ -81,62 +50,10 @@ function lib:CheckForAndGetActiveEventType()
 
 	return activeType
 end
-]]
 
 -- Changing this so gold will trigger checks
 REWARD_TYPE_EVENT_TICKETS = REWARD_TYPE_MONEY
 
-
----------------------------------------------------------------------------
--- Battleground Weekends
----------------------------------------------------------------------------
-local standardBatlegrounds = {
-	[1] = true,		-- Group Random Battleground
-	[2] = true,		-- Group Random Battleground
-	[67] = true,	-- Solo Random Battleground
-	[68] = true,	-- Solo Random Battleground
-}
-
-local bgId = 82
-function lib:GetActiveBattlegound()
-	for _, activityType in pairs({LFG_ACTIVITY_BATTLE_GROUND_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_NON_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_LOW_LEVEL}) do
-		for id, location in pairs(ZO_ACTIVITY_FINDER_ROOT_MANAGER.locationSetsLookupData[activityType]) do
-			if not standardBatlegrounds[id] then
-				if id == bgId and currentDay < daysPerEvent then
-					return id
-				end
-			end
-		end
-	end
-end
-
---[[ Battleground 
-	[1] = true, -- Group Random Battleground
-	[2] = true, -- Group Random Battleground
-	[67] = true, -- Solo Random Battleground
-	[68] = true, -- Solo Random Battleground
-	--PVP Weekend
-	[82] = true, -- Group Chaos Ball PVP Weekend
-	[83] = true, -- Group Crazy King PVP Weekend
-	[84] = true, -- Group Relic PVP Weekend
-	[85] = true, -- Group Deathmatch PVP Weekend
-	[86] = true, -- Group Domination PVP Weekend
-	[87] = true, -- Solo Relic PVP Weekend
-	[88] = true, -- Solo Chaos Ball PVP Weekend
-	[89] = true, -- Solo Crazy King PVP Weekend
-	[90] = true, -- Solo Deathmatch PVP Weekend
-	[91] = true, -- Solo Domination PVP Weekend
-	[92] = true, -- Group Chaos Ball PVP Weekend
-	[93] = true, -- Group Crazy King PVP Weekend
-	[94] = true, -- Group Relic PVP Weekend
-	[95] = true, -- Group Deathmatch PVP Weekend
-	[96] = true, -- Group Domination PVP Weekend
-	[97] = true, -- Solo Chaos Ball PVP Weekend
-	[98] = true, -- Solo Crazy King PVP Weekend
-	[99] = true, -- Solo Relic PVP Weekend
-	[100] = true, -- Solo Deathmatch PVP Weekend
-	[101] = true, -- Solo Domination PVP Weekend
-]]
 ---------------------------------------------------------------------------
 -- Debug events
 ---------------------------------------------------------------------------
@@ -216,4 +133,154 @@ end
 insertDebug(events, lib.events)
 insertDebug(titles, lib.strings.titles)
 insertDebug(descriptions, lib.strings.descriptions)
+
+
+---------------------------------------------------------------------------
+-- Simulation
+---------------------------------------------------------------------------
+local eventType = l_EVENT_TYPE_TICKETS
+
+-- Event run time simulation.
+local lastTime = 0
+local secPerDay = 30
+local daysPerEvent = 2
+local currentDay = 0
+
+local frameTimeSeconds
+
+local function updateTime(timeMS)
+--	frameTimeSeconds = math.floor(timeMS / 1000)
+	if lastTime <= timeMS then
+		lastTime = timeMS + (secPerDay * 1000)
+		
+		if daysPerEvent > 0 then
+			if currentDay > daysPerEvent then
+				currentDay = 1
+			else
+				currentDay = currentDay + 1
+			end
+		
+			if currentDay > daysPerEvent then
+				d( '-- No Event Active --')
+			else
+				d( '-- Event Day: ' .. (currentDay) .. ' --')
+			end
+		else
+			currentDay = 0
+		end
+	end
+end
+updateTime(GetFrameTimeMilliseconds())
+
+EVENT_MANAGER:RegisterForUpdate(LIB_IDENTIFIER .. '_ResetTimeUpdate', 1000, updateTime)
+
+local function isActive()
+	return daysPerEvent > 0 and currentDay <= daysPerEvent
+end
+
+---------------------------------------------------------------------------
+-- Simulation event
+---------------------------------------------------------------------------
+local original_CheckForAndGetActiveEventType = lib.CheckForAndGetActiveEventType
+local original_GetActiveBattlegound = lib.GetActiveBattlegound
+local battlegroundId = 82
+
+local function setupDebug()
+	if eventType == l_EVENT_TYPE_NONE then
+		lib.GetActiveBattlegound = original_GetActiveBattlegound
+		lib.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
+	elseif eventType == l_EVENT_TYPE_UNKNOWN then
+		lib.GetActiveBattlegound = original_GetActiveBattlegound
+		lib.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
+	elseif eventType == l_EVENT_TYPE_TICKETS then
+		lib.GetActiveBattlegound = original_GetActiveBattlegound
+		
+		function lib:CheckForAndGetActiveEventType()
+			local activeType = l_EVENT_TYPE_NONE
+			if isActive() then
+			-- Set this to the event type you want to test.
+				activeType = l_EVENT_TYPE_TICKETS
+			end
+
+			return activeType
+		end
+		-- Changing this so gold will trigger checks
+		REWARD_TYPE_EVENT_TICKETS = REWARD_TYPE_MONEY
+		
+	elseif eventType == l_EVENT_TYPE_BG then
+		lib.CheckForAndGetActiveEventType = original_CheckForAndGetActiveEventType
+		local standardBatlegrounds = {
+			[1] = true,		-- Group Random Battleground
+			[2] = true,		-- Group Random Battleground
+			[67] = true,	-- Solo Random Battleground
+			[68] = true,	-- Solo Random Battleground
+		}
+		
+		function lib:GetActiveBattlegound()
+			for _, activityType in pairs({LFG_ACTIVITY_BATTLE_GROUND_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_NON_CHAMPION,LFG_ACTIVITY_BATTLE_GROUND_LOW_LEVEL}) do
+				for id, location in pairs(ZO_ACTIVITY_FINDER_ROOT_MANAGER.locationSetsLookupData[activityType]) do
+					if not standardBatlegrounds[id] then
+						if id == battlegroundId and currentDay < daysPerEvent then
+							return id
+						end
+					end
+				end
+			end
+		end
+
+		--[[ Battleground 
+			[1] = true, -- Group Random Battleground
+			[2] = true, -- Group Random Battleground
+			[67] = true, -- Solo Random Battleground
+			[68] = true, -- Solo Random Battleground
+			--PVP Weekend
+			[82] = true, -- Group Chaos Ball PVP Weekend
+			[83] = true, -- Group Crazy King PVP Weekend
+			[84] = true, -- Group Relic PVP Weekend
+			[85] = true, -- Group Deathmatch PVP Weekend
+			[86] = true, -- Group Domination PVP Weekend
+			[87] = true, -- Solo Relic PVP Weekend
+			[88] = true, -- Solo Chaos Ball PVP Weekend
+			[89] = true, -- Solo Crazy King PVP Weekend
+			[90] = true, -- Solo Deathmatch PVP Weekend
+			[91] = true, -- Solo Domination PVP Weekend
+			[92] = true, -- Group Chaos Ball PVP Weekend
+			[93] = true, -- Group Crazy King PVP Weekend
+			[94] = true, -- Group Relic PVP Weekend
+			[95] = true, -- Group Deathmatch PVP Weekend
+			[96] = true, -- Group Domination PVP Weekend
+			[97] = true, -- Solo Chaos Ball PVP Weekend
+			[98] = true, -- Solo Crazy King PVP Weekend
+			[99] = true, -- Solo Relic PVP Weekend
+			[100] = true, -- Solo Deathmatch PVP Weekend
+			[101] = true, -- Solo Domination PVP Weekend
+		]]
+	end
+end
+setupDebug()
+
+---------------------------------------------------------------------------
+-- Simulation settings
+---------------------------------------------------------------------------
+--	/script IJA_Seasonal_Event_Manager:SetDebugEventType(3)
+function lib:SetDebugEventType(newEventType)
+	eventType = newEventType
+	setupDebug()
+end
+
+--	/script IJA_Seasonal_Event_Manager:SetDebugDaysPerEvent(3)
+function lib:SetDebugDaysPerEvent(days)
+	daysPerEvent = days
+	currentDay = daysPerEvent
+end
+
+--	/script IJA_Seasonal_Event_Manager:SetDebugSecondsPerDay(10)
+function lib:SetDebugSecondsPerDay(secs)
+	secPerDay = secs
+end
+
+--	/script IJA_Seasonal_Event_Manager:SetDebugBattlegroundId(100)
+function lib:SetDebugBattlegroundId(id)
+	battlegroundId = id
+end
 

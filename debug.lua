@@ -32,28 +32,6 @@ lib.eventsToIndexMap[var_EVENT_UNKNOWN] = {
 	['maxDailyRewards'] = 0,
 }
 
-	
-	
-local function getDailyResetTimeRemainingSeconds()
-	local secondsRemaining = math.floor(lastTime - frameTimeSeconds)
-	return secondsRemaining > 0 and secondsRemaining or 0
-end
-getDailyResetTimeRemainingSeconds()
-lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
-
-function lib:CheckForAndGetActiveEventType()
-	local activeType = var_EVENT_TYPE_NONE
-	if currentDay < daysPerEvent then
-	-- Set this to the event type you want to test.
-		activeType = var_EVENT_TYPE_TICKETS
-	end
-
-	return activeType
-end
-
--- Changing this so gold will trigger checks
-REWARD_TYPE_EVENT_TICKETS = REWARD_TYPE_MONEY
-
 ---------------------------------------------------------------------------
 -- Debug events
 ---------------------------------------------------------------------------
@@ -147,6 +125,23 @@ local daysPerEvent = 2
 local currentDay = 0
 
 local frameTimeSeconds
+
+local function getDailyResetTimeRemainingSeconds()
+	local secondsRemaining = math.floor(lastTime - frameTimeSeconds)
+	return secondsRemaining > 0 and secondsRemaining or 0
+end
+getDailyResetTimeRemainingSeconds()
+lib.GetDailyResetTimeRemainingSeconds = getDailyResetTimeRemainingSeconds
+
+function lib:CheckForAndGetActiveEventType()
+	local activeType = var_EVENT_TYPE_NONE
+	if currentDay < daysPerEvent then
+	-- Set this to the event type you want to test.
+		activeType = var_EVENT_TYPE_TICKETS
+	end
+
+	return activeType
+end
 
 local function updateTime(timeMS)
 --	frameTimeSeconds = math.floor(timeMS / 1000)

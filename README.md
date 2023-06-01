@@ -19,3 +19,27 @@ I am not going to add running times. As of yet, there is no way to get that info
 comes around or zos decides to change the end time while the event is running.
 
 I need information on Battleground Weekend events and, a way to detect them. The those events can be add.
+
+# Using the debug:
+Set the variable at the top of debug.lua to false. "ignore = false"
+
+With the debug active, a looping simulation will run. 
+Days are treated as secPerDay. 
+This allows for timeUntilDailyRest to be in a set amount of seconds. 
+For example, if secPerDay were set to 30 then, daily reset would accure every 30 seconds.
+
+Days-per-event:
+The number of days an event is active is daysPerEvent.
+Ater which, the event will become inactive for "1 day".
+
+Change the type of event to test.
+--	/script IJA_Seasonal_Event_Manager:SetDebugEventType(3)
+
+Change how many days the events will be active for.
+--	/script IJA_Seasonal_Event_Manager:SetDebugDaysPerEvent(3)
+
+Change how many secounds the simualation lasts per day.
+--	/script IJA_Seasonal_Event_Manager:SetDebugSecondsPerDay(10)
+
+Change the Battleground Id to test.
+--	/script IJA_Seasonal_Event_Manager:SetDebugBattlegroundId(100)
